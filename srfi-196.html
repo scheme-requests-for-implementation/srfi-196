@@ -76,11 +76,11 @@ which a range may be drawn.  In particular, inexact numbers can
 also specify ranges: <code>(numeric-range 0.0 1.0 0.1)</code>
 specifies the sequence 0.0, 0.1, ... 0.9.  For another
 example, the basic Latin capital letters A-Z can be specified using
-a range constructed by <code>(range char-comparator 65 26
-integer->char)</code>, where 65 is the value of <code>(char->integer
-#\A)</code>.  And to specify the binary fractions from 1/2 to 1/1024,
-<code>(range numeric-comparator 1 10 (lambda (i) (expt 2 i)))</code>
-will do the job.  These comparators can be found in SRFI 158.
+a range constructed by <code>(range char-comparator #\A 26
+(lambda (c n) (integer->char (+ (char->integer c) n))))</code>.
+And to specify the geometric sequence 1, 1/2, 1/4, &hellip;, 1/512,
+<code>(range real-comparator 1/2 10 expt)</code> will do the job.
+These comparators can be found in SRFI 162.
 
 <h1>Specification</h1>
 
