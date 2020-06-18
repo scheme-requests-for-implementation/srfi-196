@@ -1,32 +1,32 @@
-;; Copyright (C) 2020 Wolfgang Corcoran-Mathe
-;;
-;; Permission is hereby granted, free of charge, to any person obtaining a
-;; copy of this software and associated documentation files (the
-;; "Software"), to deal in the Software without restriction, including
-;; without limitation the rights to use, copy, modify, merge, publish,
-;; distribute, sublicense, and/or sell copies of the Software, and to
-;; permit persons to whom the Software is furnished to do so, subject to
-;; the following conditions:
-;;
-;; The above copyright notice and this permission notice shall be included
-;; in all copies or substantial portions of the Software.
-;;
-;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-;; OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-;; MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-;; IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-;; CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-;; TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-;; SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+;;; Copyright (C) 2020 Wolfgang Corcoran-Mathe
+;;;
+;;; Permission is hereby granted, free of charge, to any person obtaining a
+;;; copy of this software and associated documentation files (the
+;;; "Software"), to deal in the Software without restriction, including
+;;; without limitation the rights to use, copy, modify, merge, publish,
+;;; distribute, sublicense, and/or sell copies of the Software, and to
+;;; permit persons to whom the Software is furnished to do so, subject to
+;;; the following conditions:
+;;;
+;;; The above copyright notice and this permission notice shall be included
+;;; in all copies or substantial portions of the Software.
+;;;
+;;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+;;; OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+;;; MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+;;; IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+;;; CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+;;; TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+;;; SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-;;; Utility
+;;;; Utility
 
 (define (natural? x)
   (and (integer? x) (not (negative? x))))
 
 (define unspecified (if #f #f))
 
-;;; Constructors
+;;;; Constructors
 
 (define-record-type <range>
   (raw-range comparator lower-bound length indexer)
@@ -41,8 +41,8 @@
   (assume (comparator? comparator))
   (assume (natural? length))
   (assume (procedure? indexer))
-  (unless ((comparator-type-test-predicate comparator) lower-bound)
-    (error "range: invalid lower bound" comparator lower-bound))
+  (assume ((comparator-type-test-predicate comparator) lower-bound)
+          "range: invalid lower bound")
   (raw-range comparator lower-bound length indexer))
 
 ;; Utility
@@ -52,21 +52,18 @@
          0
          (range-indexer r)))
 
-;; How do we deal with the case in which the length computed from
-;; `start' and `end' isn't a positive integer?
 (define numeric-range
   (case-lambda
     ((start end) (numeric-range start end 1))
     ((start end step)
      (let ((len (/ (- end start) step)))
-       (unless (natural? len)
-         (error "numeric-range: invalid parameters" end start step))
+       (assume (natural? len) "numeric-range: invalid parameters")
        (range (make-comparator real? = < (lambda (x) (exact (abs x))))
               start
               (exact len)
               (lambda (b n) (+ b (* n step))))))))
 
-;;; Predicates
+;;;; Predicates
 
 (define (range-contains? r value)
   (assume (range? r))
@@ -81,18 +78,18 @@
 (define (range-empty? r)
   (<= (range-length r) 0))
 
-;;; Accessors
+;;;; Accessors
 
 (define (range-ref r index)
-  (if (and (integer? index) (<= 0 index) (< index (range-length r)))
-      ((range-indexer r) (range-lower-bound r) index)
-      (error "invalid index" r index)))
+  (assume (and (integer? index) (<= 0 index) (< index (range-length r)))
+          "range-ref: invalid index")
+  ((range-indexer r) (range-lower-bound r) index))
 
 (define (range-start r) (range-ref r 0))
 
 (define (range-end r) (range-ref r (- (range-length r) 1)))
 
-;;; Iteration
+;;;; Iteration
 
 ;; FIXME?: `range-split-at' is *not* equivalent to
 ;;
@@ -102,61 +99,49 @@
 (define (range-split-at r index)
   (let ((cmp (range-element-comparator r))
         (indexer (range-indexer r)))
-    (if (>= index (range-length r))
-        (error "index out of bounds" r index)
-        (values
-         (range cmp (range-start r) index indexer)
-         (range cmp (range-ref r index) (- (range-length r) index) indexer)))))
-
-;; If the `count' argument of `range-take[-right]' is greater
-;; than or equal to the length of the input range `r', an exception is
-;; raised.
+    (assume (and (natural? index) (< index (range-length r)))
+            "range-split: invalid index")
+    (values
+     (range cmp (range-start r) index indexer)
+     (range cmp (range-ref r index) (- (range-length r) index) indexer))))
 
 (define (range-take r count)
   (assume (range? r))
-  (assume (natural? count))
-  (if (>= count (range-length r))
-      (error "count out of bounds" r count)
-      (range (range-element-comparator r)
-             (range-lower-bound r)
-             count
-             (range-indexer r))))
+  (assume (and (natural? count) (< count (range-length r)))
+          "range-take: invalid count")
+  (range (range-element-comparator r)
+         (range-lower-bound r)
+         count
+         (range-indexer r)))
 
 (define (range-take-right r count)
   (assume (range? r))
-  (assume (natural? count))
-  (cond ((>= count (range-length r)) (error "count out of bounds" r count))
-        ((zero? count) (empty-range-from r))
-        (else (range (range-element-comparator r)
-                     (range-ref r (- (range-length r) count))
-                     count
-                     (range-indexer r)))))
-
-;; If the `count' argument of `range-drop[-right]' is greater
-;; than or equal to the length of the input range `r', an exception is
-;; raised.
+  (assume (and (natural? count) (< count (range-length r)))
+          "range-take-right: invalid count")
+  (if (zero? count)
+      (empty-range-from r)
+      (range (range-element-comparator r)
+             (range-ref r (- (range-length r) count))
+             count
+             (range-indexer r))))
 
 (define (range-drop r count)
   (assume (range? r))
-  (assume (natural? count))
-  (let ((len (range-length r)))
-    (if (>= count len)
-        (error "count out of bounds" r count)
-        (range (range-element-comparator r)
-               (range-ref r count)
-               (- (range-length r) count)
-               (range-indexer r)))))
+  (assume (and (natural? count) (< count (range-length r)))
+          "range-drop: invalid count")
+  (range (range-element-comparator r)
+         (range-ref r count)
+         (- (range-length r) count)
+         (range-indexer r)))
 
 (define (range-drop-right r count)
   (assume (range? r))
-  (assume (natural? count))
-  (let ((len (range-length r)))
-    (if (>= count len)
-        (error "count out of bounds" r count)
-        (range (range-element-comparator r)
-               (range-lower-bound r)
-               (- (range-length r) count)
-               (range-indexer r)))))
+  (assume (and (natural? count) (< count (range-length r)))
+          "range-drop: invalid count")
+  (range (range-element-comparator r)
+         (range-lower-bound r)
+         (- (range-length r) count)
+         (range-indexer r)))
 
 (define (range-count pred r)
   (assume (procedure? pred))
@@ -182,6 +167,7 @@
 
 (define (range-for-each proc r)
   (assume (procedure? proc))
+  (assume (range? r))
   (let ((len (range-length r)))
     (let lp ((i 0))
       (if (>= i len)
@@ -233,7 +219,7 @@
            ((range-indexer r) b (- (range-length r) 1 n)))))
 
 
-;;; Searching
+;;;; Searching
 
 (define (range-index pred r)
   (assume (procedure? pred))
@@ -278,7 +264,7 @@
         (range-drop-right r (- (range-length r) 1 idx))
         (empty-range-from r))))
 
-;;; Conversion
+;;;; Conversion
 
 (define (range->list r)
   (assume (range? r))
