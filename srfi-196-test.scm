@@ -67,6 +67,12 @@
 
 (define (identity x) x)
 
+(define (print-header message)
+  (newline)
+  (display ";;; ")
+  (display message)
+  (newline))
+
 (define real-comparator (make-comparator real? = < #f))
 
 (define-syntax constantly
@@ -96,6 +102,8 @@
 ;;;; Test these first, as range->list is used extensively in later tests.
 
 (define (check-conversion)
+  (print-header "Running conversion tests...")
+
   (check (range->list test-empty-range) => '())
   (check (range->list test-bool-range)  => '(#f #t))
 
@@ -104,12 +112,16 @@
    => #t))
 
 (define (check-constructors)
+  (print-header "Running constructor tests...")
+
   (check (range? (numeric-range 1 -5 -1))   => #t)
   (check (range? (numeric-range 1.3 5.3 1)) => #t))
-
+
 ;;;; Predicates
 
 (define (check-predicates)
+  (print-header "Running predicate tests...")
+
   (check (range-contains? test-num-range (range-start test-num-range)) => #t)
   (check (range-contains? test-bool-range (range-start test-bool-range)) => #t)
   (check (range-contains? test-num-range (+ (range-start test-num-range) 0.1))
@@ -126,16 +138,20 @@
 
   (check (range-empty? test-empty-range) => #t)
   (check (range-empty? test-num-range)   => #f))
-
+
 ;;;; Accessors
 
 (define (check-accessors)
+  (print-header "Running accessor tests...")
+
   (check (range-ref test-num-range 0)  => 10)
   (check (range-ref test-bool-range 1) => #t))
 
 ;;;; Iteration
 
 (define (check-iteration)
+  (print-header "Running iteration tests...")
+
   ;; Check lengths of ranges returned by range-split-at.
   (let ((n 10))
     (check (let-values (((ra rb) (range-split-at test-num-range n)))
@@ -150,7 +166,7 @@
 
   ;; range-take r n returns a range of length n.
   (check (range-length (range-take test-num-range 10)) => 10)
-
+
   ;; range-take-right r n returns a range of length n.
   (check (range-length (range-take-right test-num-range 10)) => 10)
 
@@ -185,7 +201,7 @@
   (check (equal? (range-filter->list always test-bool-range)
                  (range->list test-bool-range))
    => #t)
-
+
   (check (null? (range-filter->list never test-bool-range)) => #t)
 
   ;; (range-filter->list pred r) = (filter pred (range->list r))
@@ -199,7 +215,7 @@
    => #t)
 
   (check (null? (range-remove->list always test-bool-range)) => #t)
-
+
   ;; (range-remove->list pred r) = (remove pred (range->list r))
   (let ((pred even?))
     (check (equal? (range-remove->list pred test-num-range)
@@ -239,10 +255,12 @@
   (check (equal? (range->list (range-reverse test-num-range))
                  (reverse (range->list test-num-range)))
    => #t))
-
+
 ;;;; Searching
 
 (define (check-searching)
+  (print-header "Running search tests...")
+
   (check (range-index always test-num-range) => 0)
   (check (range-index never test-num-range)  => #f)
 
@@ -250,7 +268,7 @@
                (- (range-length test-num-range) 1))
    => #t)
   (check (range-index-right never test-num-range)  => #f)
-
+
   ;; (range-take-while always r) = r
   (check (equal? (range->list (range-take-while always test-bool-range))
                  (range->list test-bool-range))
@@ -311,6 +329,7 @@
   (check-accessors)
   (check-iteration)
   (check-searching)
+
   (check-report))
 
 (check-all)
