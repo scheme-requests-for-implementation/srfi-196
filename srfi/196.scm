@@ -45,8 +45,9 @@
           "range: invalid lower bound")
   (raw-range comparator lower-bound length indexer))
 
-;; Utility
-(define (empty-range-from r)
+;;;; Utility
+
+(define (%empty-range-from r)
   (range (range-element-comparator r)
          (range-lower-bound r)
          0
@@ -109,17 +110,19 @@
   (assume (range? r))
   (assume (and (natural? count) (< count (range-length r)))
           "range-take: invalid count")
-  (range (range-element-comparator r)
-         (range-lower-bound r)
-         count
-         (range-indexer r)))
+  (if (zero? count)
+      (%empty-range-from r)
+      (range (range-element-comparator r)
+             (range-lower-bound r)
+             count
+             (range-indexer r))))
 
 (define (range-take-right r count)
   (assume (range? r))
   (assume (and (natural? count) (< count (range-length r)))
           "range-take-right: invalid count")
   (if (zero? count)
-      (empty-range-from r)
+      (%empty-range-from r)
       (range (range-element-comparator r)
              (range-ref r (- (range-length r) count))
              count
@@ -129,19 +132,23 @@
   (assume (range? r))
   (assume (and (natural? count) (< count (range-length r)))
           "range-drop: invalid count")
-  (range (range-element-comparator r)
-         (range-ref r count)
-         (- (range-length r) count)
-         (range-indexer r)))
+  (if (zero? count)
+      r
+      (range (range-element-comparator r)
+             (range-ref r count)
+             (- (range-length r) count)
+             (range-indexer r))))
 
 (define (range-drop-right r count)
   (assume (range? r))
   (assume (and (natural? count) (< count (range-length r)))
           "range-drop: invalid count")
-  (range (range-element-comparator r)
-         (range-lower-bound r)
-         (- (range-length r) count)
-         (range-indexer r)))
+  (if (zero? count)
+      r
+      (range (range-element-comparator r)
+             (range-lower-bound r)
+             (- (range-length r) count)
+             (range-indexer r))))
 
 (define (range-count pred r)
   (assume (procedure? pred))
@@ -254,7 +261,7 @@
   (assume (procedure? pred))
   (assume (range? r))
   (let ((count (range-index (lambda (x) (not (pred x))) r)))
-    (if count (range-drop r count) (empty-range-from r))))
+    (if count (range-drop r count) (%empty-range-from r))))
 
 (define (range-drop-while-right pred r)
   (assume (procedure? pred))
@@ -262,7 +269,7 @@
   (let ((idx (range-index-right (lambda (x) (not (pred x))) r)))
     (if idx
         (range-drop-right r (- (range-length r) 1 idx))
-        (empty-range-from r))))
+        (%empty-range-from r))))
 
 ;;;; Conversion
 
