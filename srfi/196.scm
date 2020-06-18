@@ -44,14 +44,18 @@
   (assume ((comparator-type-test-predicate comparator) lower-bound)
           "range: invalid lower bound")
   (raw-range comparator lower-bound length indexer))
-
+
 ;;;; Utility
 
+;; Returns an empty range which is otherwise identical to r.
 (define (%empty-range-from r)
-  (range (range-element-comparator r)
-         (range-lower-bound r)
-         0
-         (range-indexer r)))
+  (raw-range (range-element-comparator r)
+             (range-lower-bound r)
+             0
+             (range-indexer r)))
+
+(define (%range-valid-index? r index)
+  (and (natural? index) (< index (range-length r))))
 
 (define numeric-range
   (case-lambda
@@ -82,14 +86,13 @@
 ;;;; Accessors
 
 (define (range-ref r index)
-  (assume (and (integer? index) (<= 0 index) (< index (range-length r)))
-          "range-ref: invalid index")
+  (assume (%range-valid-index? r index) "range-ref: invalid index")
   ((range-indexer r) (range-lower-bound r) index))
 
 (define (range-start r) (range-ref r 0))
 
 (define (range-end r) (range-ref r (- (range-length r) 1)))
-
+
 ;;;; Iteration
 
 ;; FIXME?: `range-split-at' is *not* equivalent to
@@ -100,16 +103,14 @@
 (define (range-split-at r index)
   (let ((cmp (range-element-comparator r))
         (indexer (range-indexer r)))
-    (assume (and (natural? index) (< index (range-length r)))
-            "range-split: invalid index")
+    (assume (%range-valid-index? r index) "range-split: invalid index")
     (values
      (range cmp (range-start r) index indexer)
      (range cmp (range-ref r index) (- (range-length r) index) indexer))))
 
 (define (range-take r count)
   (assume (range? r))
-  (assume (and (natural? count) (< count (range-length r)))
-          "range-take: invalid count")
+  (assume (%range-valid-index? r count) "range-take: invalid count")
   (if (zero? count)
       (%empty-range-from r)
       (range (range-element-comparator r)
@@ -119,7 +120,7 @@
 
 (define (range-take-right r count)
   (assume (range? r))
-  (assume (and (natural? count) (< count (range-length r)))
+  (assume (%range-valid-index? r count)
           "range-take-right: invalid count")
   (if (zero? count)
       (%empty-range-from r)
@@ -130,8 +131,7 @@
 
 (define (range-drop r count)
   (assume (range? r))
-  (assume (and (natural? count) (< count (range-length r)))
-          "range-drop: invalid count")
+  (assume (%range-valid-index? r count) "range-drop: invalid count")
   (if (zero? count)
       r
       (range (range-element-comparator r)
@@ -141,8 +141,7 @@
 
 (define (range-drop-right r count)
   (assume (range? r))
-  (assume (and (natural? count) (< count (range-length r)))
-          "range-drop: invalid count")
+  (assume (%range-valid-index? r count) "range-drop: invalid count")
   (if (zero? count)
       r
       (range (range-element-comparator r)
@@ -158,7 +157,7 @@
   (assume (procedure? pred))
   (assume (range? r))
   (range-fold (lambda (x last) (or (pred x) last)) #f r))
-
+
 (define (range-every pred r)
   (assume (procedure? pred))
   (assume (range? r))
@@ -224,8 +223,7 @@
          (range-length r)
          (lambda (b n)
            ((range-indexer r) b (- (range-length r) 1 n)))))
-
-
+
 ;;;; Searching
 
 (define (range-index pred r)
@@ -270,7 +268,7 @@
     (if idx
         (range-drop-right r (- (range-length r) 1 idx))
         (%empty-range-from r))))
-
+
 ;;;; Conversion
 
 (define (range->list r)
