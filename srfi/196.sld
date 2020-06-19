@@ -10,6 +10,14 @@
       (begin
         (define (assume b) #t))))
 
+  (cond-expand
+    ((library (srfi 162))
+     (import (srfi 162)))
+    (else
+     (begin
+      (define real-comparator
+        (make-comparator real? = < number-hash)))))
+
   (export range numeric-range
           range? range-contains? range-includes? range-empty?
           range-element-comparator range-length range-indexer range-ref

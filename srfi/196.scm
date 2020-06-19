@@ -63,7 +63,7 @@
     ((start end step)
      (let ((len (/ (- end start) step)))
        (assume (natural? len) "numeric-range: invalid parameters")
-       (range (make-comparator real? = < (lambda (x) (exact (abs x))))
+       (range real-comparator
               start
               (exact len)
               (lambda (b n) (+ b (* n step))))))))

@@ -73,8 +73,6 @@
   (display message)
   (newline))
 
-(define real-comparator (make-comparator real? = < #f))
-
 (define-syntax constantly
   (syntax-rules ()
     ((_ obj) (lambda _ obj))))
