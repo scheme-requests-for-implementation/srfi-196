@@ -88,7 +88,7 @@ These comparators can be found in SRFI 162.
 number of elements it contains.</p>
 
 <h2 id="constructors">Constructors</h2>
-<p><code>(range</code>&nbsp;<em>comparator lower-bound length indexer</em><code>)</code></p>
+<p><code>(range</code>&nbsp;<em>comparator lower-bound length indexer</em> [ <em>monotonic?</em> ]<code>)</code></p>
 <p>Returns a range whose lower bound is <i>lower-bound</i>
 and whose length (number of elements) is <i>length</i>.
 The <i>indexer</i> procedure returns the <i>n</i>th element
@@ -96,6 +96,10 @@ The <i>indexer</i> procedure returns the <i>n</i>th element
 of the range given <i>lower-bound</i> and <i>n</i>.
 The comparator object <i>comparator</i> is used to determine
 if a value is within the range or not.
+If the <em>monotonic?</em> argument is present and <code>#t</code>e,
+then the programmer guarantees that the values of the
+range are monotonic in the sense of <em>comparator</em>,
+which permits certain optimizations.
 This procedure must run in O(1) time.</p>
 
 <p><code>(numeric-range</code>&nbsp;<em>start end</em> [<em>step</em>]<code>)</code></p>
@@ -124,7 +128,8 @@ This procedure must run in O(1) time.</p>
 
 <p><code>(range-contains?</code>&nbsp;<em>range value</em><code>)</code></p>
 <p>Returns true if value is an element of <em>range</em>.
-This procedure must run in O(log <em>n</em>) time.</p>
+This procedure must run in O(log <em>n</em>) time
+if <em>range</em> is monotonic, but in O(<em>n</em>) if not.</p>
 
 <p><code>(range-includes?</code>&nbsp;<em>range value</em><code>)</code></p>
 <p>Returns true if value is greater than or equal to the range start and less 
@@ -147,13 +152,18 @@ This procedure must run in O(1) time.</p>
 
 <p><code>(range-indexer</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns the indexer of <em>range</em>.
-This procedure must run in O(1) time.</p>
+This procedure must run in O(<em>n</em>) time.</p>
+
+<p><code>(range-monotonic?</code>&nbsp;<em>range</em><code>)</code></p>
+<p>Returns <code>#t<\/code> if <em>range</em> was declared to be
+monotonic, or <code>#f</code> if not.
+This procedure must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-ref</code>&nbsp;<em>range n</em><code>)</code></p>
 <p>Returns the <em>n</em>th element of <em>range</em>. It is an error if 
 <em>n</em> is less than 0 or greater than or equal to the length of 
 <em>range</em>.
-This procedure must run in O(1) time.</p>
+This procedure must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-start</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Equivalent to <code>(range-ref</code>&nbsp;<em>range</em> 
@@ -189,7 +199,7 @@ These procedures must run in O(1) time.</p>
 <p><code>(range-count</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns the number of elements of <em>range</em> which satisfy 
 <em>pred</em>.
-This procedure must run in O(1) time.</p>
+This procedure must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-any</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns true if any of the elements of <em>range</em> satisfy <em>pred</em>. 
@@ -246,24 +256,28 @@ This procedure must run in O(1) time.</p>
 <code>(range-index-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns the index of the first/last element of <em>range</em> that satisfies 
 <em>pred</em>, or <code>#f</code> if there is none.
-These procedures must run in O(log <em>n</em>) time.</p>
+These procedures must run in O(<em>n</em>) time
+if <em>range</em> is monotonic, but in O(<em>n</em>) if not.</p>
 
 <p><code>(range-take-while</code>&nbsp;<em>pred range</em><code>)</code><br>
 <code>(range-take-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range containing the leading/trailing elements of <em>range</em> that satisfy 
 <em>pred</em> up to the first/last one that does not.
-These procedures must run in O(log <em>n</em>) time.</p>
+These procedures must run in O(<em>n</em>) time
+if <em>range</em> is monotonic, but in O(<em>n</em>) if not.</p>
 
 <p><code>(range-drop-while pred</code>&nbsp;<em>range</em><code>)</code><br>
 <code>(range-drop-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range that omits leading/trailing elements of <em>range</em> that satisfy 
 <em>pred</em> until the first/last one that does not.
-These procedures must run in O(log <em>n</em>) time.</p>
+These procedures must run in O(<em>n</em>) time
+if <em>range</em> is monotonic, but in O(<em>n</em>) if not.</p>
 
 <h2 id="conversion">Conversion</h2>
 
-<p><code>(range-&gt;list</code>&nbsp;<em>range</em><code>)</code></p>
-<p>Returns a list containing the elements of <em>range</em> in order.
+<p><code>(range-&gt;list</code>&nbsp;<em>range</em><code>)</code><br>
+<code>(range-&gt;vector</code>&nbsp;<em>range</em><code>)</code></p>
+<p>Returns a /vector containing the elements of <em>range</em> in order.
 This procedure must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-&gt;generator</code>&nbsp;<em>range</em><code>)</code></p>
