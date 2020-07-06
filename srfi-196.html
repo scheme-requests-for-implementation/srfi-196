@@ -104,13 +104,14 @@ This procedure must run in O(1) time.</p>
 
 <p><code>(numeric-range</code>&nbsp;<em>start end</em> [<em>step</em>]<code>)</code></p>
 <p>Returns a numeric range, a special case of a range specified by an
-inclusive lower bound (default 0), an exclusive upper bound, and a
+inclusive lower bound, an exclusive upper bound, and a
 step value (default 1), all of which can be exact or inexact real
 numbers. Its comparator is the natural comparator on real numbers,
 and its indexer is
 <code>(lambda (bound n) (+ bound (* n step)))</code>.
 It is an error if <i>upper-bound</i> - <i>lower-bound</i> is not a
 multiple of <i>step</i>.
+Note that all numeric ranges are monotonic.
 This procedure must run in O(1) time.</p>
 
 <p>Note that an effect of this definition is that the elements of
