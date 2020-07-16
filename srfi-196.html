@@ -3,22 +3,16 @@
   <head>
     <meta charset="utf-8">
     <title>SRFI 196: Range Objects</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/srfi.css" type="text/css">
     <link href="/favicon.png" rel="icon" sizes="192x192" type="image/png">
-  </head>
+    <link rel="stylesheet" href="https://srfi.schemers.org/srfi.css" type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1"></head>
 
   <body>
+    <h1><a href="https://srfi.schemers.org/"><img class="srfi-logo" src="https://srfi.schemers.org/srfi-logo.svg" alt="SRFI logo" /></a>196: Range Objects</h1>
 
-<h1>Title</h1>
+<p>by John Cowan (text), Wolfgang Corcoran-Mathe (implementation)</p>
 
-Range Objects
-
-<h1>Author</h1>
-
-John Cowan (text), Wolfgang Corcoran-Mathe (implementation)
-
-<h1>Status</h1>
+<h2>Status</h2>
 
 <p>This SRFI is currently in <em>draft</em> status.  Here is <a href="https://srfi.schemers.org/srfi-process.html">an explanation</a> of each status that a SRFI can hold.  To provide input on this SRFI, please send email to <code><a href="mailto:srfi+minus+196+at+srfi+dotschemers+dot+org">srfi-196@<span class="antispam">nospam</span>srfi.schemers.org</a></code>.  To subscribe to the list, follow <a href="https://srfi.schemers.org/srfi-list-subscribe.html">these instructions</a>.  You can access previous messages via the mailing list <a href="https://srfi-email.schemers.org/srfi-196">archive</a>.</p>
 <ul>
@@ -28,7 +22,7 @@ John Cowan (text), Wolfgang Corcoran-Mathe (implementation)
   <li>Draft #2 published: 2020-07-16</li>
 </ul>
 
-<h1>Abstract</h1>
+<h2>Abstract</h2>
 
 <p>Ranges are immutable collections that can be enumerated but are
 represented algorithmically rather than by a per-element data
@@ -37,11 +31,11 @@ defined on lists, vectors, and other collections.  If necessary,
 ranges can be converted to a list of its elements or a generator
 that will lazily produce each element in the range.</p>
 
-<h1>Issues</h1>
+<h2>Issues</h2>
 
 None at present.
 
-<h1>Rationale</h1>
+<h2>Rationale</h2>
 
 <p>One of the most common things to do in programming is to execute
 a block of code a fixed number of times, with access to the index
@@ -83,9 +77,9 @@ And to specify the geometric sequence 1, 1/2, 1/4, &hellip;, 1/512,
 <code>(range real-comparator 1/2 10 expt)</code> will do the job.
 These comparators can be found in SRFI 162.
 
-<h1>Specification</h1>
+<h2>Specification</h2>
 
-<h2 id="constructors">Constructors</h2>
+<h3 id="constructors">Constructors</h3>
 <p><code>(range</code>&nbsp;<em>comparator lower-bound length indexer</em><code>)</code></p>
 <p>Returns a range whose lower bound is <i>lower-bound</i>
 and whose length (number of elements) is <i>length</i>.
@@ -111,7 +105,7 @@ by the step value rather than by adding the step value to itself
 repeatedly.  This reduces the likelihood of roundoff errors.</p>
 
 
-<h2 id="predicates">Predicates</h2>
+<h3 id="predicates">Predicates</h3>
 
 <p><code>(range?</code>&nbsp;<em>obj</em><code>)</code></p>
 <p>Returns <code>#t</code> if <em>obj</em> is a range and <code>#f</code> 
@@ -128,7 +122,7 @@ range.</p>
 <p><code>(range-empty?</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns true if <em>range</em> is empty.</p>
 
-<h2 id="accessors">Accessors</h2>
+<h3 id="accessors">Accessors</h3>
 
 <p><code>(range-element-comparator</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns the comparator of <em>range</em>.</p>
@@ -152,7 +146,7 @@ range.</p>
 <p>Shorthand for <code>(range-ref</code>&nbsp;<em>range</em> <code>(- 
 (range-length</code>&nbsp;<em>range</em><code>) 1))</code>.</p>
 
-<h2 id="iteration">Iteration</h2>
+<h3 id="iteration">Iteration</h3>
 
 <p><code>(range-split-at</code>&nbsp;<em>range index</em><code>)</code></p>
 <p>Returns two values which are ranges. The first value contains all elements 
@@ -222,7 +216,7 @@ the last invocation, or <em>nil</em> if there was no invocation.</p>
 <p>Returns a range which contains the same elements as <em>range</em>, but in 
 reverse order.</p>
 
-<h2 id="searching">Searching</h2>
+<h3 id="searching">Searching</h3>
 
 <p><code>(range-index</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns the index of the first element of <em>range</em> that satisfies 
@@ -248,7 +242,7 @@ satisfy <em>pred</em>.</p>
 <p>Returns a range the omits the last elements of <em>range</em> that satisfy 
 <em>pred</em> until the last one that does not.</p>
 
-<h2 id="conversion">Conversion</h2>
+<h3 id="conversion">Conversion</h3>
 
 <p><code>(range-&gt;list</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns a list containing the elements of <em>range</em> in order.</p>
@@ -257,7 +251,7 @@ satisfy <em>pred</em>.</p>
 <p>Returns a SRFI 158 generator that generates the elements of <em>range</em> 
 in order.</p>
 
-<h1>Implementation</h1>
+<h2>Implementation</h2>
 
 <p>The sample implementation is in the repository of this SRFI.
 An R7RS library file and a separate file containing the actual
@@ -267,13 +261,13 @@ The implementation needs SRFI 1 and SRFI 128, and can take
 advantage of SRFI 145 (<code>assume</code>) if it is present.</p>
 
 
-<h1>Acknowledgements</h1>
+<h2>Acknowledgements</h2>
 
 <p>Without Python's <code>range</code> object, this SRFI would not exist.
 Thanks also to the contributors on the SRFI 196 mailing list.
 </p>
 
-<h1>Copyright</h1>
+<h2>Copyright</h2>
 Copyright &copy; John Cowan, Wolfgang Corcoran-Mathe (2020).
 
 <p>
