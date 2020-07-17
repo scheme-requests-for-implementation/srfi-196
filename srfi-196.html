@@ -96,7 +96,7 @@ The <i>indexer</i> procedure returns the <i>n</i>th element
 of the range given <i>lower-bound</i> and <i>n</i>.
 The comparator object <i>comparator</i> is used to determine
 if a value is within the range or not.
-If the <em>monotonic?</em> argument is present and <code>#t</code>e,
+If the <em>monotonic?</em> argument is present and <code>#t</code>,
 then the programmer guarantees that the values of the
 range are monotonic in the sense of <em>comparator</em>,
 which permits certain optimizations.
@@ -153,12 +153,12 @@ This procedure must run in O(1) time.</p>
 
 <p><code>(range-indexer</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns the indexer of <em>range</em>.
-This procedure must run in O(<em>n</em>) time.</p>
+This procedure must run in O(1) time.</p>
 
 <p><code>(range-monotonic?</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns <code>#t</code> if <em>range</em> was declared to be
 monotonic, or <code>#f</code> if not.
-This procedure must run in O(<em>n</em>) time.</p>
+This procedure must run in O(1) time.</p>
 
 <p><code>(range-ref</code>&nbsp;<em>range n</em><code>)</code></p>
 <p>Returns the <em>n</em>th element of <em>range</em>. It is an error if 
@@ -239,13 +239,6 @@ result of the previous invocation as a second argument. For the first
 invocation, <em>nil</em> is used as the second argument. Returns the result of 
 the last invocation, or <em>nil</em> if there was no invocation.
 These procedures must run in O(<em>n</em>) time.</p>
-
-<p>Invokes proc on each member of <em>range</em> in reverse order, passing the 
-result of the previous invocation as a second argument. For the first 
-invocation, <em>nil</em> is used as the second argument. Returns the result of 
-the last invocation, or <em>nil</em> if there was no invocation.
-This procedure must run in O(<em>n</em>) time.</p>
-
 <p><code>(range-reverse</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns a range which contains the same elements as <em>range</em>, but in 
 reverse order.
@@ -264,21 +257,21 @@ if <em>range</em> is monotonic, but in O(<em>n</em>) if not.</p>
 <code>(range-take-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range containing the leading/trailing elements of <em>range</em> that satisfy 
 <em>pred</em> up to the first/last one that does not.
-These procedures must run in O(<em>n</em>) time
+These procedures must run in (O(log <em>n</em>) time
 if <em>range</em> is monotonic, but in O(<em>n</em>) if not.</p>
 
 <p><code>(range-drop-while pred</code>&nbsp;<em>range</em><code>)</code><br>
 <code>(range-drop-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range that omits leading/trailing elements of <em>range</em> that satisfy 
 <em>pred</em> until the first/last one that does not.
-These procedures must run in O(<em>n</em>) time
+These procedures must run in (O(log <em>n</em>) time
 if <em>range</em> is monotonic, but in O(<em>n</em>) if not.</p>
 
 <h2 id="conversion">Conversion</h2>
 
 <p><code>(range-&gt;list</code>&nbsp;<em>range</em><code>)</code><br>
 <code>(range-&gt;vector</code>&nbsp;<em>range</em><code>)</code></p>
-<p>Returns a /vector containing the elements of <em>range</em> in order.
+<p>Returns a list/vector containing the elements of <em>range</em> in order.
 This procedure must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-&gt;generator</code>&nbsp;<em>range</em><code>)</code></p>
