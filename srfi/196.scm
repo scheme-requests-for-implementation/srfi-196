@@ -19,14 +19,10 @@
 ;;; TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 ;;; SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-;;;; Utility
-
 (define (natural? x)
   (and (integer? x) (not (negative? x))))
 
 (define unspecified (if #f #f))
-
-;;;; Constructors
 
 (define-record-type <range>
   (raw-range comparator lower-bound length indexer)
@@ -36,17 +32,6 @@
   (length range-length)
   (indexer range-indexer))
 
-;; The primary range constructor does some extra consistency checking.
-(define (range comparator lower-bound length indexer)
-  (assume (comparator? comparator))
-  (assume (natural? length))
-  (assume (procedure? indexer))
-  (assume ((comparator-type-test-predicate comparator) lower-bound)
-          "range: invalid lower bound")
-  (raw-range comparator lower-bound length indexer))
-
-;;;; Utility
-
 ;; Returns an empty range which is otherwise identical to r.
 (define (%empty-range-from r)
   (raw-range (range-element-comparator r)
@@ -54,8 +39,21 @@
              0
              (range-indexer r)))
 
+(define (%range-type? r obj)
+  ((comparator-type-test-predicate (range-element-comparator r)) obj))
+
 (define (%range-valid-index? r index)
   (and (natural? index) (< index (range-length r))))
+
+;;;; Constructors
+
+;; The primary range constructor does some extra consistency checking.
+(define (range comparator lower-bound length indexer)
+  (assume (comparator? comparator))
+  (assume (natural? length))
+  (assume (procedure? indexer))
+  (assume ((comparator-type-test-predicate comparator) lower-bound))
+  (raw-range comparator lower-bound length indexer))
 
 (define numeric-range
   (case-lambda
@@ -72,15 +70,19 @@
 
 (define (range-contains? r value)
   (assume (range? r))
+  (assume (%range-type? r value))
   (let ((cmp (range-element-comparator r)))
     (and (range-index (lambda (x) (=? cmp x value)) r) #t)))
 
 (define (range-includes? r value)
+  (assume (range? r))
+  (assume (%range-type? r value))
   (let ((cmp (range-element-comparator r)))
     (and (>=? cmp value (range-start r))
          (<=? cmp value (range-end r)))))
 
 (define (range-empty? r)
+  (assume (range? r))
   (<= (range-length r) 0))
 
 ;;;; Accessors
@@ -98,12 +100,8 @@
 
 ;;;; Iteration
 
-;; FIXME?: `range-split-at' is *not* equivalent to
-;;
-;;   (values (range-take r n) (range-drop r n)),
-;;
-;; it seems.  This might be a bit surprising.
 (define (range-split-at r index)
+  (assume (range? r))
   (let ((cmp (range-element-comparator r))
         (indexer (range-indexer r)))
     (assume (%range-valid-index? r index) "range-split: invalid index")
@@ -158,12 +156,10 @@
 
 (define (range-any pred r)
   (assume (procedure? pred))
-  (assume (range? r))
   (range-fold (lambda (x last) (or (pred x) last)) #f r))
-
+
 (define (range-every pred r)
   (assume (procedure? pred))
-  (assume (range? r))
   (call-with-current-continuation
    (lambda (return)
      (range-fold (lambda (x _) (or (pred x) (return #f))) #t r))))
@@ -186,8 +182,8 @@
            (lp (+ i 1)))))))
 
 (define (range-fold proc nil r)
-  (assume (range? r))
   (assume (procedure? proc))
+  (assume (range? r))
   (let ((len (range-length r)))
     (let lp ((i 0) (acc nil))
       (if (>= i len)
@@ -195,8 +191,8 @@
           (lp (+ i 1) (proc (%range-ref-no-check r i) acc))))))
 
 (define (range-fold-right proc nil r)
-  (assume (range? r))
   (assume (procedure? proc))
+  (assume (range? r))
   (let ((len (range-length r)))
     (let rec ((i 0))
       (if (>= i len)
@@ -247,26 +243,18 @@
           (else (lp (- i 1))))))
 
 (define (range-take-while pred r)
-  (assume (procedure? pred))
-  (assume (range? r))
   (let ((count (range-index (lambda (x) (not (pred x))) r)))
     (if count (range-take r count) r)))
 
 (define (range-take-while-right pred r)
-  (assume (procedure? pred))
-  (assume (range? r))
   (let ((idx (range-index-right (lambda (x) (not (pred x))) r)))
     (if idx (range-take-right r (- (range-length r) 1 idx)) r)))
 
 (define (range-drop-while pred r)
-  (assume (procedure? pred))
-  (assume (range? r))
   (let ((count (range-index (lambda (x) (not (pred x))) r)))
     (if count (range-drop r count) (%empty-range-from r))))
 
 (define (range-drop-while-right pred r)
-  (assume (procedure? pred))
-  (assume (range? r))
   (let ((idx (range-index-right (lambda (x) (not (pred x))) r)))
     (if idx
         (range-drop-right r (- (range-length r) 1 idx))
