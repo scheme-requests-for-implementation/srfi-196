@@ -30,6 +30,7 @@
    (import (srfi 78)))
   (else
     (begin
+      (define *tests-failed* 0)
       (define-syntax check
         (syntax-rules (=>)
           ((check expr)
@@ -43,6 +44,7 @@
                (display " ; correct")
                (newline))
              (begin
+               (set! *tests-failed* (+ *tests-failed* 1))
                (display "FAILED: for ")
                (display 'expr)
                (display " expected ")
@@ -50,7 +52,15 @@
                (display " but got ")
                (display expr)
                (newline))))))
-      (define (check-report) #t))))
+      (define (check-report)
+        (if (zero? *tests-failed*)
+            (begin
+             (display "All tests passed.")
+             (newline))
+            (begin
+             (display "TESTS FAILED: ")
+             (display *tests-failed*)
+             (newline)))))))
 
 (cond-expand
   ((library (srfi 158))
@@ -332,6 +342,7 @@
   (check-iteration)
   (check-searching)
 
+  (newline)
   (check-report))
 
 (check-all)
