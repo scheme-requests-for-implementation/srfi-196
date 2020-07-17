@@ -89,6 +89,9 @@
   (assume (%range-valid-index? r index) "range-ref: invalid index")
   ((range-indexer r) (range-lower-bound r) index))
 
+(define (%range-ref-no-check r index)
+  ((range-indexer r) (range-lower-bound r) index))
+
 (define (range-start r) (range-ref r 0))
 
 (define (range-end r) (range-ref r (- (range-length r) 1)))
@@ -179,7 +182,7 @@
       (if (>= i len)
           unspecified
           (begin
-           (proc (range-ref r i))
+           (proc (%range-ref-no-check r i))
            (lp (+ i 1)))))))
 
 (define (range-fold proc nil r)
@@ -189,7 +192,7 @@
     (let lp ((i 0) (acc nil))
       (if (>= i len)
           acc
-          (lp (+ i 1) (proc (range-ref r i) acc))))))
+          (lp (+ i 1) (proc (%range-ref-no-check r i) acc))))))
 
 (define (range-fold-right proc nil r)
   (assume (range? r))
@@ -198,7 +201,7 @@
     (let rec ((i 0))
       (if (>= i len)
           nil
-          (proc (range-ref r i) (rec (+ i 1)))))))
+          (proc (%range-ref-no-check r i) (rec (+ i 1)))))))
 
 (define (range-filter->list pred r)
   (assume (procedure? pred))
@@ -232,7 +235,7 @@
   (let ((len (range-length r)))
     (let lp ((i 0))
       (cond ((>= i len) #f)
-            ((pred (range-ref r i)) i)
+            ((pred (%range-ref-no-check r i)) i)
             (else (lp (+ i 1)))))))
 
 (define (range-index-right pred r)
@@ -240,7 +243,7 @@
   (assume (range? r))
   (let lp ((i (- (range-length r) 1)))
     (cond ((<= i 0) #f)
-          ((pred (range-ref r i)) i)
+          ((pred (%range-ref-no-check r i)) i)
           (else (lp (- i 1))))))
 
 (define (range-take-while pred r)
@@ -293,6 +296,6 @@
       (if (>= i len)
           (eof-object)
           (begin
-           (let ((v (range-ref r i)))
+           (let ((v (%range-ref-no-check r i)))
              (set! i (+ i 1))
              v))))))
