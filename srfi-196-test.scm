@@ -107,6 +107,10 @@
 
   (check (equal? (generator->list (range->generator test-num-range))
                  (range->list test-num-range))
+   => #t)
+
+  (check (equal? (vector->list (range->vector test-num-range))
+                 (range->list test-num-range))
    => #t))
 
 (define (check-constructors)
