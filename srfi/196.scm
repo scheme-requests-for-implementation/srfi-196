@@ -275,6 +275,17 @@
   (assume (range? r))
   (range-fold-right cons '() r))
 
+(define (range->vector r)
+  (assume (range? r))
+  (let* ((len (range-length r))
+         (vec (make-vector len)))
+    (let lp ((i 0))
+      (if (= i len)
+          vec
+          (begin
+           (vector-set! vec i (range-ref r i))
+           (lp (+ i 1)))))))
+
 (define (range->generator r)
   (assume (range? r))
   (let ((i 0) (len (range-length r)))

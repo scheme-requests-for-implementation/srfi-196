@@ -28,6 +28,6 @@
           range-filter->list range-remove->list range-reverse
           range-index range-index-right range-take-while range-drop-while
           range-take-while-right range-drop-while-right
-          range->list range->generator)
+          range->list range->generator range->vector)
 
   (include "196.scm"))
