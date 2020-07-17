@@ -217,11 +217,11 @@
 
 (define (range-reverse r)
   (assume (range? r))
-  (range (range-element-comparator r)
-         (range-lower-bound r)
-         (range-length r)
-         (lambda (b n)
-           ((range-indexer r) b (- (range-length r) 1 n)))))
+  (raw-range (range-element-comparator r)
+             (range-lower-bound r)
+             (range-length r)
+             (lambda (b n)
+               ((range-indexer r) b (- (range-length r) 1 n)))))
 
 ;;;; Searching
 
