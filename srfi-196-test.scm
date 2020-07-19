@@ -96,6 +96,12 @@
 
 (define test-empty-range (numeric-range 0 0))
 
+(define test-bogo-range
+  (range real-comparator
+         0
+         20
+         (lambda (_ n) n)))
+
 (define test-bool-range
   (range (make-comparator boolean?
                           boolean=?
@@ -140,12 +146,18 @@
    => #f)
   (check (range-contains? test-num-range (+ (range-end test-num-range) 1))
    => #f)
+  (check (range-contains? test-bogo-range (range-start test-bogo-range)) => #t)
+  (check (range-contains? test-bogo-range (+ (range-end test-bogo-range) 1))
+   => #f)
 
   (check (range-includes? test-num-range (range-start test-num-range)) => #t)
   (check (range-includes? test-bool-range (range-start test-bool-range)) => #t)
   (check (range-includes? test-num-range (+ (range-start test-num-range) 0.1))
    => #t)
   (check (range-includes? test-num-range (+ (range-end test-num-range) 1))
+   => #f)
+  (check (range-includes? test-bogo-range (range-start test-bogo-range)) => #t)
+  (check (range-includes? test-bogo-range (+ (range-end test-bogo-range) 1))
    => #f)
 
   (check (range-empty? test-empty-range) => #t)
@@ -175,6 +187,10 @@
   (check (let-values (((ra rb) (range-split-at test-bool-range 1)))
            (append (range->list ra) (range->list rb)))
    => (range->list test-bool-range))
+
+  (check (let-values (((ra rb) (range-split-at test-bogo-range 1)))
+           (append (range->list ra) (range->list rb)))
+   => (range->list test-bogo-range))
 
   ;; range-take r n returns a range of length n.
   (check (range-length (range-take test-num-range 10)) => 10)
@@ -266,6 +282,18 @@
 
   (check (equal? (range->list (range-reverse test-num-range))
                  (reverse (range->list test-num-range)))
+   => #t)
+
+  (check (eqv? (range-start (range-reverse test-bogo-range))
+               (range-end test-bogo-range))
+   => #t)
+
+  (check (eqv? (range-end (range-reverse test-bogo-range))
+               (range-start test-bogo-range))
+   => #t)
+
+  (check (equal? (range->list (range-reverse test-bogo-range))
+                 (reverse (range->list test-bogo-range)))
    => #t))
 
 ;;;; Searching
