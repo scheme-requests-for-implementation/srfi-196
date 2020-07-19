@@ -100,55 +100,64 @@
 
 ;;;; Iteration
 
+;; The main internal constructor for new ranges.  In general, we must
+;; never change the element comparator or lower bound of a range.
+(define (%derived-range r len indexer)
+  (raw-range (range-element-comparator r)
+             (range-lower-bound r)
+             len
+             indexer))
+
+(define (%offset-indexer indexer off)
+  (lambda (b n)
+    (indexer b (+ n off))))
+
 (define (range-split-at r index)
   (assume (range? r))
   (let ((cmp (range-element-comparator r))
         (indexer (range-indexer r)))
     (assume (%range-valid-index? r index) "range-split: invalid index")
     (values
-     (range cmp (range-start r) index indexer)
-     (range cmp (range-ref r index) (- (range-length r) index) indexer))))
+     (%derived-range r index indexer)
+     (%derived-range r
+                     (- (range-length r) index)
+                     (%offset-indexer indexer index)))))
 
 (define (range-take r count)
   (assume (range? r))
   (assume (%range-valid-index? r count) "range-take: invalid count")
   (if (zero? count)
       (%empty-range-from r)
-      (range (range-element-comparator r)
-             (range-lower-bound r)
-             count
-             (range-indexer r))))
+      (%derived-range r count (range-indexer r))))
 
 (define (range-take-right r count)
   (assume (range? r))
   (assume (%range-valid-index? r count)
           "range-take-right: invalid count")
-  (if (zero? count)
-      (%empty-range-from r)
-      (range (range-element-comparator r)
-             (range-ref r (- (range-length r) count))
-             count
-             (range-indexer r))))
+  (let ((off (- (range-length r) count)))
+    (if (zero? count)
+        (%empty-range-from r)
+        (%derived-range r
+                        count
+                        (%offset-indexer (range-indexer r) off)))))
 
 (define (range-drop r count)
   (assume (range? r))
   (assume (%range-valid-index? r count) "range-drop: invalid count")
   (if (zero? count)
       r
-      (range (range-element-comparator r)
-             (range-ref r count)
-             (- (range-length r) count)
-             (range-indexer r))))
+      (%derived-range r
+                      (- (range-length r) count)
+                      (%offset-indexer (range-indexer r) count))))
 
 (define (range-drop-right r count)
   (assume (range? r))
   (assume (%range-valid-index? r count) "range-drop: invalid count")
   (if (zero? count)
       r
-      (range (range-element-comparator r)
-             (range-lower-bound r)
-             (- (range-length r) count)
-             (range-indexer r))))
+      (%derived-range r
+                      (- (range-length r) count)
+                      (range-indexer r))))
 
 (define (range-count pred r)
   (assume (procedure? pred))
