@@ -10,6 +10,14 @@
       (begin
         (define (assume b) #t))))
 
+  (cond-expand
+    ((library (srfi 162))
+     (import (srfi 162)))
+    (else
+     (begin
+      (define real-comparator
+        (make-comparator real? = < number-hash)))))
+
   (export range numeric-range
           range? range-contains? range-includes? range-empty?
           range-element-comparator range-length range-indexer range-ref
@@ -20,6 +28,6 @@
           range-filter->list range-remove->list range-reverse
           range-index range-index-right range-take-while range-drop-while
           range-take-while-right range-drop-while-right
-          range->list range->generator)
+          range->list range->generator range->vector)
 
   (include "196.scm"))
