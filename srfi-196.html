@@ -93,6 +93,20 @@ The comparator object <i>comparator</i> is used to determine
 if a value is within the range or not.
 This procedure must run in O(1) time.</p>
 
+<p>There is a constraint on indexers:
+It is an error if an indexer <code>indexer</code>
+does not satisfy the following identity:</p>
+<blockquote>
+<code>(indexer lower-bound k)</code> is equal to
+<code>(indexer (indexer lower-bound k) 0)</code>
+</blockquote>
+<p>for all values of <code>k</code> between 0 (inclusive)
+and the highest value which will ever be passed as the
+second argument to <code>indexer</code> (exclusive).
+This constraint cannot be checked by the implementation, but if
+violated will cause various other procedures to misbehave.
+</p>
+
 <p><code>(numeric-range</code>&nbsp;<em>start end</em> [<em>step</em>]<code>)</code></p>
 <p>Returns a numeric range, a special case of a range specified by an
 inclusive lower bound, an exclusive upper bound, and a
