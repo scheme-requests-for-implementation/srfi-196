@@ -182,6 +182,11 @@ of <em>range</em> from the zeroth element to the <em>index</em>th element
 exclusive. The second value contains all elements of <em>range</em> from the 
 <em>index</em>th element inclusive to the last element.
 This procedure must run in O(1) time.</p>
+<p><code>(subrange</code>&nbsp;<em>range start end</em><code>)</code></p>
+Returns a range with the same element comparator as <i>range</i> which
+contains the elements of <i>range</i> from index <i>start</i>, inclusive,
+through index <i>end</i>, exclusive.  This procedure must run in O(1)
+time.</p>
 
 <p><code>(range-take</code>&nbsp;<em>range count</em><code>)</code><br>
 <code>(range-take-right</code>&nbsp;<em>range count</em><code>)</code><br>
