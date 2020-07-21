@@ -183,21 +183,21 @@ exclusive. The second value contains all elements of <em>range</em> from the
 <em>index</em>th element inclusive to the last element.
 This procedure must run in O(1) time.</p>
 <p><code>(subrange</code>&nbsp;<em>range start end</em><code>)</code></p>
-Returns a range with the same element comparator as <i>range</i> which
-contains the elements of <i>range</i> from index <i>start</i>, inclusive,
-through index <i>end</i>, exclusive.  This procedure must run in O(1)
-time.</p>
+Returns a range as <i>range</i> which contains the elements of
+<i>range</i> from index <i>start</i>, inclusive, through index
+<i>end</i>, exclusive and shares the same element comparator.
+This procedure must run in O(1) time.</p>
 
 <p><code>(range-take</code>&nbsp;<em>range count</em><code>)</code><br>
-<code>(range-take-right</code>&nbsp;<em>range count</em><code>)</code><br>
+<code>(range-take-right</code>&nbsp;<em>range count</em><code>)</code></p>
 Returns a range which contains the first/last <em>count</em> elements of 
-<em>range</em>.
+<em>range</em> and shares the same element comparator.
 These procedures must run in O(1) time.</p>
 
 <p><code>(range-drop</code>&nbsp;<em>range count</em><code>)</code><br>
 <code>(range-drop-right</code>&nbsp;<em>range count</em><code>)</code></p>
 <p>Returns a range which contains all except the first/last <em>count</em> elements 
-of <em>range</em>.
+of <em>range</em> and shares the same element comparator.
 These procedures must run in O(1) time.</p>
 
 <p><code>(range-count</code>&nbsp;<em>pred range</em><code>)</code></p>
@@ -244,7 +244,7 @@ the last invocation, or <em>nil</em> if there was no invocation.
 These procedures must run in O(<em>n</em>) time.</p>
 <p><code>(range-reverse</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns a range which contains the same elements as <em>range</em>, but in 
-reverse order.
+reverse order and shares the same element comparator.
 This procedure must run in O(1) time.</p>
 
 <h3 id="searching">Searching</h3>
@@ -258,13 +258,15 @@ These procedures must run in O(<em>n</em>) time.</p>
 <p><code>(range-take-while</code>&nbsp;<em>pred range</em><code>)</code><br>
 <code>(range-take-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range containing the leading/trailing elements of <em>range</em> that satisfy 
-<em>pred</em> up to the first/last one that does not.
+<em>pred</em> up to the first/last one that does not,
+using the same element comparator.
 These procedures must run in (O(<em>n</em>) time.</p>
 
 <p><code>(range-drop-while pred</code>&nbsp;<em>range</em><code>)</code><br>
 <code>(range-drop-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range that omits leading/trailing elements of <em>range</em> that satisfy 
-<em>pred</em> until the first/last one that does not.
+<em>pred</em> until the first/last one that does not,
+using the same element comparator.
 These procedures must run in (O(<em>n</em>) time.</p>
 
 <h3 id="conversion">Conversion</h3>
