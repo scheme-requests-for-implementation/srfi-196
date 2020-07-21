@@ -20,6 +20,7 @@
   <li>60-day deadline: 2020-07-16</li>
   <li>Draft #1 published: 2020-05-17</li>
   <li>Draft #2 published: 2020-07-16</li>
+  <li>Draft #3 published: 2020-07-19</li>
 </ul>
 
 <h2>Abstract</h2>
@@ -133,7 +134,7 @@ This procedure must run in O(1) time.</p>
 
 <p><code>(range-contains?</code>&nbsp;<em>range value</em><code>)</code></p>
 <p>Returns true if value is an element of <em>range</em>.
-This procedure must run in O(<em>n</em>) time.</p>`
+This procedure must run in O(<em>n</em>) time.</p>
 <p><code>(range-includes?</code>&nbsp;<em>range value</em><code>)</code></p>
 <p>Returns true if value is greater than or equal to the range start and less 
 than or equal to the range end, whether or not it is an element of the range.
@@ -253,13 +254,13 @@ These procedures must run in O(<em>n</em>) time.</p>
 <code>(range-take-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range containing the leading/trailing elements of <em>range</em> that satisfy 
 <em>pred</em> up to the first/last one that does not.
-These procedures must run in (O(log <em>n</em>) time.</p>
+These procedures must run in (O(<em>n</em>) time.</p>
 
 <p><code>(range-drop-while pred</code>&nbsp;<em>range</em><code>)</code><br>
 <code>(range-drop-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range that omits leading/trailing elements of <em>range</em> that satisfy 
 <em>pred</em> until the first/last one that does not.
-These procedures must run in (O(log <em>n</em>) time.</p>
+These procedures must run in (O(<em>n</em>) time.</p>
 
 <h3 id="conversion">Conversion</h3>
 
