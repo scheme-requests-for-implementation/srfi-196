@@ -176,6 +176,23 @@
            (append (range->list ra) (range->list rb)))
    => (range->list test-bool-range))
 
+  (check (range->list
+          (subrange test-bool-range 0 (range-length test-bool-range)))
+   => (range->list test-bool-range))
+  (let ((a 5) (b 10))
+    (check (= (range-length (subrange test-num-range a b)) (- b a)))
+    (check (equal?
+	    (range->list (subrange test-num-range a b))
+            (range->list
+             (range-take (range-drop test-num-range a) (- b a)))))
+    (check (equal?
+	    (range->list (subrange test-num-range 0 b))
+	    (range->list (range-take test-num-range b))))
+    (check (equal?
+            (range->list
+             (subrange test-num-range a (range-length test-num-range)))
+            (range->list (range-drop test-num-range a)))))
+
   ;; range-take r n returns a range of length n.
   (check (range-length (range-take test-num-range 10)) => 10)
 

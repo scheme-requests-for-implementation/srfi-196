@@ -22,6 +22,7 @@
           range? range-contains? range-includes? range-empty?
           range-element-comparator range-length range-indexer range-ref
           range-start range-end
+          subrange
           range-split-at range-take range-take-right range-drop range-drop-right
           range-count range-map->list range-for-each range-fold range-fold-right
           range-any range-every

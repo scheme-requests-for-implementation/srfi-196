@@ -116,6 +116,18 @@
                 (- (range-length r) index)
                 indexer))))
 
+(define (subrange r start end)
+  (assume (range? r))
+  (assume (%range-valid-index? r start) "subrange: invalid start index")
+  (assume (and (natural? end) (> end start) (<= end (range-length r)))
+          "subrange: invalid end index")
+  (if (and (zero? start) (= end (range-length r)))
+      r
+      (raw-range (range-element-comparator r)
+                 (%range-ref-no-check r start)
+                 (- end start)
+                 (range-indexer r))))
+
 (define (range-take r count)
   (assume (range? r))
   (assume (%range-valid-index? r count) "range-take: invalid count")
