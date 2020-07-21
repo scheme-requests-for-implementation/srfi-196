@@ -134,12 +134,12 @@
   (assume (range? r))
   (assume (%range-valid-index? r count)
           "range-take-right: invalid count")
-  (if (zero? count)
-      (%empty-range-from r)
-      (%derived-range r
-                      count
-                      (%offset-indexer (range-indexer r)
-                                       (- (range-length r) count)))))
+  (let ((off (- (range-length r) count)))
+    (if (zero? count)
+        (%empty-range-from r)
+        (%derived-range r
+                        count
+                        (%offset-indexer (range-indexer r) off)))))
 
 (define (range-drop r count)
   (assume (range? r))
