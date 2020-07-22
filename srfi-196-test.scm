@@ -176,18 +176,26 @@
            (append (range->list ra) (range->list rb)))
    => (range->list test-bool-range))
 
+  (check (let-values (((ra rb) (range-split-at test-bool-range 1)))
+           (and (eqv? (range-element-comparator test-bool-range)
+                      (range-element-comparator ra))
+                (eqv? (range-element-comparator ra)
+                      (range-element-comparator rb)))))
+
   (check (range->list
           (subrange test-bool-range 0 (range-length test-bool-range)))
    => (range->list test-bool-range))
+  (check (eqv? (range-element-comparator test-bool-range)
+               (range-element-comparator (subrange test-bool-range 0 2))))
   (let ((a 5) (b 10))
     (check (= (range-length (subrange test-num-range a b)) (- b a)))
     (check (equal?
-	    (range->list (subrange test-num-range a b))
+            (range->list (subrange test-num-range a b))
             (range->list
              (range-take (range-drop test-num-range a) (- b a)))))
     (check (equal?
-	    (range->list (subrange test-num-range 0 b))
-	    (range->list (range-take test-num-range b))))
+            (range->list (subrange test-num-range 0 b))
+            (range->list (range-take test-num-range b))))
     (check (equal?
             (range->list
              (subrange test-num-range a (range-length test-num-range)))
@@ -195,17 +203,27 @@
 
   ;; range-take r n returns a range of length n.
   (check (range-length (range-take test-num-range 10)) => 10)
+  (check (eqv? (range-element-comparator test-bool-range)
+               (range-element-comparator (range-take test-bool-range 1))))
 
   ;; range-take-right r n returns a range of length n.
   (check (range-length (range-take-right test-num-range 10)) => 10)
+  (check (eqv? (range-element-comparator test-bool-range)
+               (range-element-comparator
+                (range-take-right test-bool-range 1))))
 
   ;; range-drop r n returns a range of length (range-length r) - n.
   (check (range-length (range-drop test-num-range 10))
    => (- (range-length test-num-range) 10))
+  (check (eqv? (range-element-comparator test-bool-range)
+               (range-element-comparator (range-drop test-bool-range 1))))
 
   ;; range-drop-right r n returns a range of length (range-length r) - n.
   (check (range-length (range-drop-right test-num-range 10))
    => (- (range-length test-num-range) 10))
+  (check (eqv? (range-element-comparator test-bool-range)
+               (range-element-comparator
+                (range-drop-right test-bool-range 1))))
 
   (check (range-count always test-num-range) => (range-length test-num-range))
   (check (range-count never test-num-range)  => 0)
@@ -281,6 +299,9 @@
                (range-start test-bool-range))
    => #t)
 
+  (check (eqv? (range-element-comparator test-bool-range)
+               (range-element-comparator (range-reverse test-bool-range))))
+
   (check (equal? (range->list (range-reverse test-num-range))
                  (reverse (range->list test-num-range)))
    => #t))
@@ -305,6 +326,9 @@
 
   ;; (range-take-while never r) = [empty range]
   (check (range-empty? (range-take-while never test-bool-range)) => #t)
+  (check (eqv? (range-element-comparator test-bool-range)
+               (range-element-comparator
+                (range-take-while never test-bool-range))))
 
   ;; (range-drop-while always r) = [empty range]
   (check (range-empty? (range-drop-while always test-bool-range)) => #t)
@@ -313,6 +337,10 @@
   (check (equal? (range->list (range-drop-while never test-bool-range))
                  (range->list test-bool-range))
    => #t)
+
+  (check (eqv? (range-element-comparator test-bool-range)
+               (range-element-comparator
+                (range-drop-while always test-bool-range))))
 
   ;; Given a (non-existent) range-append function,
   ;;
@@ -332,6 +360,10 @@
   ;; (range-take-while-right never r) = [empty range]
   (check (range-empty? (range-take-while-right never test-bool-range)) => #t)
 
+  (check (eqv? (range-element-comparator test-bool-range)
+               (range-element-comparator
+                (range-take-while-right never test-bool-range))))
+
   ;; (range-drop-while-right always r) = [empty range]
   (check (range-empty? (range-drop-while-right always test-bool-range)) => #t)
 
@@ -339,6 +371,10 @@
   (check (equal? (range->list (range-drop-while-right never test-bool-range))
                  (range->list test-bool-range))
    => #t)
+
+  (check (eqv? (range-element-comparator test-bool-range)
+               (range-element-comparator
+                (range-drop-while-right always test-bool-range))))
 
   ;; Given a (non-existent) range-append function,
   ;;
