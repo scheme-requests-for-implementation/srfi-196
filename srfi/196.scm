@@ -257,7 +257,7 @@
   (assume (procedure? pred))
   (assume (range? r))
   (let lp ((i (- (range-length r) 1)))
-    (cond ((<= i 0) #f)
+    (cond ((< i 0) #f)
           ((pred (%range-ref-no-check r i)) i)
           (else (lp (- i 1))))))
 
