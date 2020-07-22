@@ -61,10 +61,10 @@
     ((start end step)
      (let ((len (/ (- end start) step)))
        (assume (natural? len) "numeric-range: invalid parameters")
-       (range real-comparator
-              start
-              (exact len)
-              (lambda (b n) (+ b (* n step))))))))
+       (raw-range real-comparator
+                  start
+                  (exact len)
+                  (lambda (b n) (+ b (* n step))))))))
 
 ;;;; Predicates
 
@@ -91,26 +91,18 @@
   (assume (%range-valid-index? r index) "range-ref: invalid index")
   ((range-indexer r) (range-lower-bound r) index))
 
-(define (%range-ref-no-check r index)
-  ((range-indexer r) (range-lower-bound r) index))
+;; A portable implementation can't rely on inlining, but it
+;; can rely on macros.
+(define-syntax %range-ref-no-check
+  (syntax-rules ()
+    ((_ r index)
+     ((range-indexer r) (range-lower-bound r) index))))
 
-(define (range-start r) (range-ref r 0))
+(define (range-start r) (%range-ref-no-check r 0))
 
-(define (range-end r) (range-ref r (- (range-length r) 1)))
+(define (range-end r) (%range-ref-no-check r (- (range-length r) 1)))
 
 ;;;; Iteration
-
-;; The main internal constructor for new ranges.  In general, we must
-;; never change the element comparator or lower bound of a range.
-(define (%derived-range r len indexer)
-  (raw-range (range-element-comparator r)
-             (range-lower-bound r)
-             len
-             indexer))
-
-(define (%offset-indexer indexer off)
-  (lambda (b n)
-    (indexer b (+ n off))))
 
 (define (range-split-at r index)
   (assume (range? r))
@@ -118,17 +110,33 @@
         (indexer (range-indexer r)))
     (assume (%range-valid-index? r index) "range-split: invalid index")
     (values
-     (%derived-range r index indexer)
-     (%derived-range r
-                     (- (range-length r) index)
-                     (%offset-indexer indexer index)))))
+     (raw-range cmp (range-start r) index indexer)
+     (raw-range cmp
+                (%range-ref-no-check r index)
+                (- (range-length r) index)
+                indexer))))
+
+(define (subrange r start end)
+  (assume (range? r))
+  (assume (%range-valid-index? r start) "subrange: invalid start index")
+  (assume (and (natural? end) (> end start) (<= end (range-length r)))
+          "subrange: invalid end index")
+  (if (and (zero? start) (= end (range-length r)))
+      r
+      (raw-range (range-element-comparator r)
+                 (%range-ref-no-check r start)
+                 (- end start)
+                 (range-indexer r))))
 
 (define (range-take r count)
   (assume (range? r))
   (assume (%range-valid-index? r count) "range-take: invalid count")
   (if (zero? count)
       (%empty-range-from r)
-      (%derived-range r count (range-indexer r))))
+      (raw-range (range-element-comparator r)
+                 (range-lower-bound r)
+                 count
+                 (range-indexer r))))
 
 (define (range-take-right r count)
   (assume (range? r))
@@ -136,28 +144,30 @@
           "range-take-right: invalid count")
   (if (zero? count)
       (%empty-range-from r)
-      (%derived-range r
-                      count
-                      (%offset-indexer (range-indexer r)
-                                       (- (range-length r) count)))))
+      (raw-range (range-element-comparator r)
+                 (%range-ref-no-check r (- (range-length r) count))
+                 count
+                 (range-indexer r))))
 
 (define (range-drop r count)
   (assume (range? r))
   (assume (%range-valid-index? r count) "range-drop: invalid count")
   (if (zero? count)
       r
-      (%derived-range r
-                      (- (range-length r) count)
-                      (%offset-indexer (range-indexer r) count))))
+      (raw-range (range-element-comparator r)
+                 (%range-ref-no-check r count)
+                 (- (range-length r) count)
+                 (range-indexer r))))
 
 (define (range-drop-right r count)
   (assume (range? r))
   (assume (%range-valid-index? r count) "range-drop: invalid count")
   (if (zero? count)
       r
-      (%derived-range r
-                      (- (range-length r) count)
-                      (range-indexer r))))
+      (raw-range (range-element-comparator r)
+                 (range-lower-bound r)
+                 (- (range-length r) count)
+                 (range-indexer r))))
 
 (define (range-count pred r)
   (assume (procedure? pred))
@@ -247,7 +257,7 @@
   (assume (procedure? pred))
   (assume (range? r))
   (let lp ((i (- (range-length r) 1)))
-    (cond ((<= i 0) #f)
+    (cond ((< i 0) #f)
           ((pred (%range-ref-no-check r i)) i)
           (else (lp (- i 1))))))
 
@@ -283,7 +293,7 @@
       (if (= i len)
           vec
           (begin
-           (vector-set! vec i (range-ref r i))
+           (vector-set! vec i (%range-ref-no-check r i))
            (lp (+ i 1)))))))
 
 (define (range->generator r)
