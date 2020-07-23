@@ -29,7 +29,7 @@
 represented algorithmically rather than by a per-element data
 structure.  This SRFI defines a large subset of the sequence operations
 defined on lists, vectors, and other collections.  If necessary,
-ranges can be converted to a list of its elements or a generator
+ranges can be converted to a list or vector of its elements or a generator
 that will lazily produce each element in the range.</p>
 
 <h2>Issues</h2>
@@ -128,15 +128,15 @@ repeatedly.  This reduces the likelihood of roundoff errors.</p>
 <h3 id="predicates">Predicates</h3>
 
 <p><code>(range?</code>&nbsp;<em>obj</em><code>)</code></p>
-<p>Returns <code>#t</code> if <em>obj</em> is a range and <code>#f</code> 
+<p>Returns <code>#t</code> if <em>obj</em> is a range and <code>#f</code>
 otherwise.
 This procedure must run in O(1) time.</p>
 
 <p><code>(range-contains?</code>&nbsp;<em>range value</em><code>)</code></p>
-<p>Returns true if value is an element of <em>range</em>.
+<p>Returns true if <em>value</em> is an element of <em>range</em>.
 This procedure must run in O(<em>n</em>) time.</p>
 <p><code>(range-includes?</code>&nbsp;<em>range value</em><code>)</code></p>
-<p>Returns true if value is greater than or equal to the range start and less 
+<p>Returns true if <em>value</em> is greater than or equal to the range start and less
 than or equal to the range end, whether or not it is an element of the range.
 This procedure must run in O(1) time.</p>
 
@@ -159,28 +159,29 @@ This procedure must run in O(1) time.</p>
 This procedure must run in O(1) time.</p>
 
 <p><code>(range-ref</code>&nbsp;<em>range n</em><code>)</code></p>
-<p>Returns the <em>n</em>th element of <em>range</em>. It is an error if 
-<em>n</em> is less than 0 or greater than or equal to the length of 
+<p>Returns the <em>n</em>th element of <em>range</em>. It is an error if
+<em>n</em> is less than 0 or greater than or equal to the length of
 <em>range</em>.
 This procedure must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-start</code>&nbsp;<em>range</em><code>)</code></p>
-<p>Equivalent to <code>(range-ref</code>&nbsp;<em>range</em> 
+<p>Equivalent to <code>(range-ref</code>&nbsp;<em>range</em>
 <code>0)</code>.
 This procedure must run in O(1) time.</p>
 
 <p><code>(range-end</code>&nbsp;<em>range</em><code>)</code></p>
-<p>Equivalent to <code>(range-ref</code>&nbsp;<em>range</em> <code>(- 
+<p>Equivalent to <code>(range-ref</code>&nbsp;<em>range</em> <code>(-
 (range-length</code>&nbsp;<em>range</em><code>) 1))</code>.
 This procedure must run in O(1) time.</p>
 
 <h3 id="iteration">Iteration</h3>
 
 <p><code>(range-split-at</code>&nbsp;<em>range index</em><code>)</code></p>
-<p>Returns two values which are ranges. The first value contains all elements 
-of <em>range</em> from the zeroth element to the <em>index</em>th element 
-exclusive. The second value contains all elements of <em>range</em> from the 
-<em>index</em>th element inclusive to the last element.
+<p>Returns two values which are ranges. The first value contains all elements
+of <em>range</em> from the zeroth element to the <em>index</em>th element
+exclusive. The second value contains all elements of <em>range</em> from the
+<em>index</em>th element inclusive to the last element.  Both ranges share
+the same element comparator with <em>range</em>.
 This procedure must run in O(1) time.</p>
 <p><code>(subrange</code>&nbsp;<em>range start end</em><code>)</code></p>
 Returns a range as <i>range</i> which contains the elements of
@@ -190,31 +191,31 @@ This procedure must run in O(1) time.</p>
 
 <p><code>(range-take</code>&nbsp;<em>range count</em><code>)</code><br>
 <code>(range-take-right</code>&nbsp;<em>range count</em><code>)</code></p>
-Returns a range which contains the first/last <em>count</em> elements of 
+Returns a range which contains the first/last <em>count</em> elements of
 <em>range</em> and shares the same element comparator.
 These procedures must run in O(1) time.</p>
 
 <p><code>(range-drop</code>&nbsp;<em>range count</em><code>)</code><br>
 <code>(range-drop-right</code>&nbsp;<em>range count</em><code>)</code></p>
-<p>Returns a range which contains all except the first/last <em>count</em> elements 
+<p>Returns a range which contains all except the first/last <em>count</em> elements
 of <em>range</em> and shares the same element comparator.
 These procedures must run in O(1) time.</p>
 
 <p><code>(range-count</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns the number of elements of <em>range</em> which satisfy 
+<p>Returns the number of elements of <em>range</em> which satisfy
 <em>pred</em>.
 This procedure must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-any</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns true if any of the elements of <em>range</em> satisfy <em>pred</em>. 
-Specifically it returns the last value returned by <em>pred</em>. Otherwise, 
+<p>Returns true if any of the elements of <em>range</em> satisfy <em>pred</em>.
+Specifically it returns the last value returned by <em>pred</em>. Otherwise,
 <code>#f</code> is returned.
 This procedure must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-every</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns true if all the elements of <em>range</em> satisfy <em>pred</em>, 
-specifically it returns the last value returned by <em>pred</em> or 
-<code>#t</code> if <em>pred</em> was never invoked. Otherwise, <code>#f</code> 
+<p>Returns true if all the elements of <em>range</em> satisfy <em>pred</em>,
+specifically it returns the last value returned by <em>pred</em> or
+<code>#t</code> if <em>pred</em> was never invoked. Otherwise, <code>#f</code>
 is returned.
 This procedure must run in O(<em>n</em>) time.</p>
 
@@ -225,59 +226,59 @@ element of <em>range</em> in order. However, the order in which
 This procedure must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-for-each</code>&nbsp;<em>proc range</em><code>)</code></p>
-<p>Applies <em>proc</em> to each element of <em>range</em> in order. Returns an 
+<p>Applies <em>proc</em> to each element of <em>range</em> in order. Returns an
 unspecified result.
 This procedure must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-filter-&gt;list</code>&nbsp;<em>pred range</em><code>)</code><br>
 <code>(range-remove-&gt;list</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns a list containing the elements of <em>range</em> that satisfy / do 
+<p>Returns a list containing the elements of <em>range</em> that satisfy / do
 not satisfy <em>pred</em>.
 This procedure must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-fold</code>&nbsp;<em>proc nil range</em><code>)</code><br>
 <code>(range-fold-right</code>&nbsp;<em>proc nil range</em><code>)</code></p>
-<p>Invokes <em>proc</em> on each member of <em>range</em> in order / reverse order, passing the 
-result of the previous invocation as a second argument. For the first 
-invocation, <em>nil</em> is used as the second argument. Returns the result of 
+<p>Invokes <em>proc</em> on each member of <em>range</em> in order / reverse order, passing the
+result of the previous invocation as a second argument. For the first
+invocation, <em>nil</em> is used as the second argument. Returns the result of
 the last invocation, or <em>nil</em> if there was no invocation.
 These procedures must run in O(<em>n</em>) time.</p>
 <p><code>(range-reverse</code>&nbsp;<em>range</em><code>)</code></p>
-<p>Returns a range which contains the same elements as <em>range</em>, but in 
-reverse order and shares the same element comparator.
+<p>Returns a range which contains the same elements as <em>range</em>, but in
+reverse order, and which shares the same element comparator.
 This procedure must run in O(1) time.</p>
 
 <h3 id="searching">Searching</h3>
 
 <p><code>(range-index</code>&nbsp;<em>pred range</em><code>)</code><br>
 <code>(range-index-right</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns the index of the first/last element of <em>range</em> that satisfies 
+<p>Returns the index of the first/last element of <em>range</em> that satisfies
 <em>pred</em>, or <code>#f</code> if there is none.
 These procedures must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-take-while</code>&nbsp;<em>pred range</em><code>)</code><br>
 <code>(range-take-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns a range containing the leading/trailing elements of <em>range</em> that satisfy 
+<p>Returns a range containing the leading/trailing elements of <em>range</em> that satisfy
 <em>pred</em> up to the first/last one that does not,
 using the same element comparator.
-These procedures must run in (O(<em>n</em>) time.</p>
+These procedures must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-drop-while pred</code>&nbsp;<em>range</em><code>)</code><br>
 <code>(range-drop-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns a range that omits leading/trailing elements of <em>range</em> that satisfy 
+<p>Returns a range that omits leading/trailing elements of <em>range</em> that satisfy
 <em>pred</em> until the first/last one that does not,
 using the same element comparator.
-These procedures must run in (O(<em>n</em>) time.</p>
+These procedures must run in O(<em>n</em>) time.</p>
 
 <h3 id="conversion">Conversion</h3>
 
 <p><code>(range-&gt;list</code>&nbsp;<em>range</em><code>)</code><br>
 <code>(range-&gt;vector</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns a list/vector containing the elements of <em>range</em> in order.
-This procedure must run in O(<em>n</em>) time.</p>
+These procedures must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-&gt;generator</code>&nbsp;<em>range</em><code>)</code></p>
-<p>Returns a SRFI 158 generator that generates the elements of <em>range</em> 
+<p>Returns a SRFI 158 generator that generates the elements of <em>range</em>
 in order.
 This procedure must run in O(1) time,
 and each call of the generator must run in O(1) time.
@@ -288,7 +289,7 @@ and each call of the generator must run in O(1) time.
 An R7RS library file and a separate file containing the actual
 implementation are provided, along with a test file that
 works with SRFI 78, but is self-contained if SRFI 78 does not exist.
-The implementation needs SRFI 1 and SRFI 128, and can take
+The implementation needs SRFI 128, and can take
 advantage of SRFI 145 (<code>assume</code>) if it is present.</p>
 
 
