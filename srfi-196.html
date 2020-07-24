@@ -110,12 +110,12 @@ violated will cause various other procedures to misbehave.
 
 <p><code>(numeric-range</code>&nbsp;<em>start end</em> [<em>step</em>]<code>)</code></p>
 <p>Returns a numeric range, a special case of a range specified by an
-inclusive lower bound, an exclusive upper bound, and a
-step value (default 1), all of which can be exact or inexact real
+inclusive lower bound <em>start</em>, an exclusive upper bound <em>end</em>, and a
+<em>step</em> value (default 1), all of which can be exact or inexact real
 numbers. Its comparator is the natural comparator on real numbers,
 and its indexer is
 <code>(lambda (bound n) (+ bound (* n step)))</code>.
-It is an error if <i>upper-bound</i> - <i>lower-bound</i> is not a
+It is an error if <i>end</i> - <i>start</i> is not a
 multiple of <i>step</i>.
 This procedure must run in O(1) time.</p>
 
@@ -136,8 +136,10 @@ This procedure must run in O(1) time.</p>
 <p>Returns true if <em>value</em> is an element of <em>range</em>.
 This procedure must run in O(<em>n</em>) time.</p>
 <p><code>(range-includes?</code>&nbsp;<em>range value</em><code>)</code></p>
-<p>Returns true if <em>value</em> is greater than or equal to the range start and less
-than or equal to the range end, whether or not it is an element of the range.
+<p>Returns true if <em>value</em> is greater than or equal to
+<code>(range-start <em>range</em>)</code> and less
+than or equal to <code>(range-end <em>range</em>)</code>, whether or not it is
+an element of the range.
 This procedure must run in O(1) time.</p>
 
 <p><code>(range-empty?</code>&nbsp;<em>range</em><code>)</code></p>
@@ -184,7 +186,7 @@ exclusive. The second value contains all elements of <em>range</em> from the
 the same element comparator with <em>range</em>.
 This procedure must run in O(1) time.</p>
 <p><code>(subrange</code>&nbsp;<em>range start end</em><code>)</code></p>
-Returns a range as <i>range</i> which contains the elements of
+Returns a range which contains the elements of
 <i>range</i> from index <i>start</i>, inclusive, through index
 <i>end</i>, exclusive and shares the same element comparator.
 This procedure must run in O(1) time.</p>
