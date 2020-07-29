@@ -70,18 +70,28 @@ iterates a million times but with less space overhead than
 <p>In addition, there are other sequences besides integers from
 which a range may be drawn.  In particular, inexact numbers can
 also specify ranges: <code>(numeric-range 0.0 1.0 0.1)</code>
-specifies the sequence 0.0, 0.1, ... 0.9.  For another
-example, the basic Latin capital letters A-Z can be specified using
+specifies the sequence 0.0, 0.1, ... 0.9,
+at least when inexact numbers are represented
+as IEEE 754 binary double floats (as is usually the case).
+Roundoff error is still possible by multiplying, but it is
+greatly reduced compared to accumulated error by repeated adding.
+</p>
+Two more examples:
+The basic Latin capital letters A-Z can be specified using
 a range constructed by <code>(range char-comparator #\A 26
 (lambda (c n) (integer->char (+ (char->integer c) n))))</code>.
-And to specify the geometric sequence 1, 1/2, 1/4, &hellip;, 1/512,
-<code>(range real-comparator 1/2 10 expt)</code> will do the job.
-These comparators can be found in SRFI 162.
+The geometric sequence 1, 1/2, 1/4, &hellip;, 1/512 can be expressed by
+<code>(range real-comparator 1/2 10 expt)</code>.
+Note that these comparators can be found in SRFI 162.
 
 <h2>Specification</h2>
 
-<p>Note: The size of a range object is independent of the
-number of elements it contains.</p>
+<p>Ranges belong to a disjoint type.
+The size of a range object is independent of the
+number of elements it contains.
+Statements about running time exclude time spent in
+one of a comparator's procedures.
+</p>
 
 <h3 id="constructors">Constructors</h3>
 <p><code>(range</code>&nbsp;<em>comparator lower-bound length indexer</em><code>)</code></p>
