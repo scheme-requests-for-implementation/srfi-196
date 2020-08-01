@@ -76,13 +76,18 @@ as IEEE 754 binary double floats (as is usually the case).
 Roundoff error is still possible by multiplying, but it is
 greatly reduced compared to accumulated error by repeated adding.
 </p>
-Two more examples:
-The basic Latin capital letters A-Z can be specified using
+<p>Two more examples:
+</p>
+<ul>
+<li>The basic Latin capital letters A-Z can be specified using
 a range constructed by <code>(range char-comparator #\A 26
 (lambda (c n) (integer->char (+ (char->integer c) n))))</code>.
+</li>
+<li>
 The geometric sequence 1, 1/2, 1/4, &hellip;, 1/512 can be expressed by
 <code>(range real-comparator 1/2 10 expt)</code>.
-Note that these comparators can be found in SRFI 162.
+</li></ul>
+<p>Note that these comparators can be found in SRFI 162.</p>
 
 <h2>Specification</h2>
 
@@ -90,7 +95,7 @@ Note that these comparators can be found in SRFI 162.
 The size of a range object is independent of the
 number of elements it contains.
 Statements about running time exclude time spent in
-one of a comparator's procedures.
+the indexer procedure and the comparator's procedures.
 </p>
 
 <h3 id="constructors">Constructors</h3>
@@ -125,8 +130,7 @@ inclusive lower bound <em>start</em>, an exclusive upper bound <em>end</em>, and
 numbers. Its comparator is the natural comparator on real numbers,
 and its indexer is
 <code>(lambda (bound n) (+ bound (* n step)))</code>.
-It is an error if <i>end</i> - <i>start</i> is not a
-multiple of <i>step</i>.
+It is an error if <code>(zero? (modulo (- end start) step))</code> => <code>#f</code>.
 This procedure must run in O(1) time.</p>
 
 <p>Note that an effect of this definition is that the elements of
