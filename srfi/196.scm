@@ -25,22 +25,15 @@
 (define unspecified (if #f #f))
 
 (define-record-type <range>
-  (raw-range comparator lower-bound length indexer)
+  (raw-range lower-bound length indexer)
   range?
-  (comparator range-element-comparator)
   (lower-bound range-lower-bound)
   (length range-length)
   (indexer range-indexer))
 
 ;; Returns an empty range which is otherwise identical to r.
 (define (%empty-range-from r)
-  (raw-range (range-element-comparator r)
-             (range-lower-bound r)
-             0
-             (range-indexer r)))
-
-(define (%range-type? r obj)
-  ((comparator-type-test-predicate (range-element-comparator r)) obj))
+  (raw-range (range-lower-bound r) 0 (range-indexer r)))
 
 (define (%range-valid-index? r index)
   (and (natural? index) (< index (range-length r))))
@@ -48,12 +41,10 @@
 ;;;; Constructors
 
 ;; The primary range constructor does some extra consistency checking.
-(define (range comparator lower-bound length indexer)
-  (assume (comparator? comparator))
+(define (range lower-bound length indexer)
   (assume (natural? length))
   (assume (procedure? indexer))
-  (assume ((comparator-type-test-predicate comparator) lower-bound))
-  (raw-range comparator lower-bound length indexer))
+  (raw-range lower-bound length indexer))
 
 (define numeric-range
   (case-lambda
@@ -65,29 +56,7 @@
                         ((if (< start end) < >) (+ start (* (- len 1) step))
                                                 end)))
                "numeric-range: computed length is invalid")
-       (raw-range real-comparator
-                  start
-                  (exact len)
-                  (lambda (b n) (+ b (* n step))))))))
-
-;;;; Predicates
-
-(define (range-contains? r value)
-  (assume (range? r))
-  (assume (%range-type? r value))
-  (let ((cmp (range-element-comparator r)))
-    (and (range-index (lambda (x) (=? cmp x value)) r) #t)))
-
-(define (range-includes? r value)
-  (assume (range? r))
-  (assume (%range-type? r value))
-  (let ((cmp (range-element-comparator r)))
-    (and (>=? cmp value (range-start r))
-         (<=? cmp value (range-end r)))))
-
-(define (range-empty? r)
-  (assume (range? r))
-  (<= (range-length r) 0))
+       (raw-range start (exact len) (lambda (b n) (+ b (* n step))))))))
 
 ;;;; Accessors
 
@@ -110,13 +79,11 @@
 
 (define (range-split-at r index)
   (assume (range? r))
-  (let ((cmp (range-element-comparator r))
-        (indexer (range-indexer r)))
+  (let ((indexer (range-indexer r)))
     (assume (%range-valid-index? r index) "range-split: invalid index")
     (values
-     (raw-range cmp (range-start r) index indexer)
-     (raw-range cmp
-                (%range-ref-no-check r index)
+     (raw-range (range-start r) index indexer)
+     (raw-range (%range-ref-no-check r index)
                 (- (range-length r) index)
                 indexer))))
 
@@ -127,8 +94,7 @@
           "subrange: invalid end index")
   (if (and (zero? start) (= end (range-length r)))
       r
-      (raw-range (range-element-comparator r)
-                 (%range-ref-no-check r start)
+      (raw-range (%range-ref-no-check r start)
                  (- end start)
                  (range-indexer r))))
 
@@ -137,10 +103,7 @@
   (assume (%range-valid-index? r count) "range-take: invalid count")
   (if (zero? count)
       (%empty-range-from r)
-      (raw-range (range-element-comparator r)
-                 (range-lower-bound r)
-                 count
-                 (range-indexer r))))
+      (raw-range (range-lower-bound r) count (range-indexer r))))
 
 (define (range-take-right r count)
   (assume (range? r))
@@ -148,8 +111,7 @@
           "range-take-right: invalid count")
   (if (zero? count)
       (%empty-range-from r)
-      (raw-range (range-element-comparator r)
-                 (%range-ref-no-check r (- (range-length r) count))
+      (raw-range (%range-ref-no-check r (- (range-length r) count))
                  count
                  (range-indexer r))))
 
@@ -158,8 +120,7 @@
   (assume (%range-valid-index? r count) "range-drop: invalid count")
   (if (zero? count)
       r
-      (raw-range (range-element-comparator r)
-                 (%range-ref-no-check r count)
+      (raw-range (%range-ref-no-check r count)
                  (- (range-length r) count)
                  (range-indexer r))))
 
@@ -168,8 +129,7 @@
   (assume (%range-valid-index? r count) "range-drop: invalid count")
   (if (zero? count)
       r
-      (raw-range (range-element-comparator r)
-                 (range-lower-bound r)
+      (raw-range (range-lower-bound r)
                  (- (range-length r) count)
                  (range-indexer r))))
 
@@ -240,8 +200,7 @@
 
 (define (range-reverse r)
   (assume (range? r))
-  (raw-range (range-element-comparator r)
-             (range-lower-bound r)
+  (raw-range (range-lower-bound r)
              (range-length r)
              (lambda (b n)
                ((range-indexer r) b (- (range-length r) 1 n)))))
