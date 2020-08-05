@@ -138,9 +138,10 @@
           "subrange: invalid end index")
   (if (and (zero? start) (= end (range-length r)))
       r
-      (%derived-range r
-                      (- end start)
-                      (%offset-indexer (range-indexer r) start))))
+      (raw-range (range-element-comparator r)
+                 (%range-ref-no-check r start)
+                 (- end start)
+                 (range-indexer r))))
 
 (define (range-take r count)
   (assume (range? r))
