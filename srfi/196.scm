@@ -60,7 +60,11 @@
     ((start end) (numeric-range start end 1))
     ((start end step)
      (let ((len (/ (- end start) step)))
-       (assume (natural? len) "numeric-range: invalid parameters")
+       (assume (and (natural? len)
+                    (or (= start end)
+                        ((if (< start end) < >) (+ start (* (- len 1) step))
+                                                end)))
+               "numeric-range: computed length is invalid")
        (raw-range real-comparator
                   start
                   (exact len)
