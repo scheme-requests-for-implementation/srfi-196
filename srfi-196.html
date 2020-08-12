@@ -97,6 +97,14 @@ Statements about running time exclude time spent in
 the indexer procedure.
 </p>
 
+<p>This SRFI recommends, but does not require, that Scheme implementations
+which also provide <a href="https://srfi.schemers.org/srfi-42/srfi-42.html">SRFI 42</a>
+modify it so that the typed generator <code>:range</code> also accepts
+a single argument which is a range in the sense of this SRFI.
+This feature should be used with caution, as SRFI 42 loops expect
+that <code>:range</code> iterates only over exact rationals.
+</p>
+
 <h3 id="constructors">Constructors</h3>
 <p><code>(range</code>&nbsp;<em>lower-bound length indexer</em><code>)</code></p>
 <p>Returns a range whose lower bound is <i>lower-bound</i>
