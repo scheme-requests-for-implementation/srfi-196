@@ -73,40 +73,60 @@ iterates a million times but with less space overhead than
 <p>In addition, there are other sequences besides integers from
 which a range may be drawn.  In particular, inexact numbers can
 also specify ranges: <code>(numeric-range 0.0 1.0 0.1)</code>
-specifies the sequence 0.0, 0.1, ... 0.9.  For another
-example, the basic Latin capital letters A-Z can be specified using
-a range constructed by <code>(range char-comparator #\A 26
+specifies the sequence 0.0, 0.1, ... 0.9,
+at least when inexact numbers are represented
+as IEEE 754 binary double floats (as is usually the case).
+Roundoff error is still possible by multiplying, but it is
+greatly reduced compared to accumulated error by repeated adding.
+</p>
+<p>Two more examples:
+</p>
+<ul>
+<li>The basic Latin capital letters A-Z can be specified using
+a range constructed by <code>(range #\A 26
 (lambda (c n) (integer->char (+ (char->integer c) n))))</code>.
-And to specify the geometric sequence 1, 1/2, 1/4, &hellip;, 1/512,
-<code>(range real-comparator 1/2 10 expt)</code> will do the job.
-These comparators can be found in SRFI 162.
+</li>
+<li>
+The geometric sequence 1, 1/2, 1/4, &hellip;, 1/512 can be expressed by
+<code>(range 1/2 10 expt)</code>.
+</li></ul>
 
 <h2>Specification</h2>
 
-<p>Note: The size of a range object is independent of the
-number of elements it contains.</p>
+<p>Ranges belong to a disjoint type.
+The size of a range object is independent of the
+number of elements it contains.
+Statements about running time exclude time spent in
+the indexer procedure.
+</p>
+
+<p>This SRFI recommends, but does not require, that Scheme implementations
+which also provide <a href="https://srfi.schemers.org/srfi-42/srfi-42.html">SRFI 42</a>
+modify it so that the typed generator <code>:range</code> also accepts
+a single argument which is a range in the sense of this SRFI.
+This feature should be used with caution, as SRFI 42 loops expect
+that <code>:range</code> iterates only over exact rationals.
+</p>
 
 <h3 id="constructors">Constructors</h3>
-<p><code>(range</code>&nbsp;<em>comparator lower-bound length indexer</em><code>)</code></p>
+<p><code>(range</code>&nbsp;<em>lower-bound length indexer</em><code>)</code></p>
 <p>Returns a range whose lower bound is <i>lower-bound</i>
 and whose length (number of elements) is <i>length</i>.
 The <i>indexer</i> procedure returns the <i>n</i>th element
 (where 0 &#x2264; <i>n</i> &lt; <i>length</i>)
 of the range given <i>lower-bound</i> and <i>n</i>.
-The comparator object <i>comparator</i> is used to determine
-if a value is within the range or not.
 This procedure must run in O(1) time.</p>
 
 <p>There is a constraint on indexers:
-It is an error if an indexer <code>indexer</code>
+It is an error if an indexer <code>ind</code>
 does not satisfy the following identity:</p>
 <blockquote>
-<code>(indexer lower-bound k)</code> is equal to
-<code>(indexer (indexer lower-bound k) 0)</code>
+<code>(ind lower-bound k)</code> is equal to
+<code>(ind (ind lower-bound k) 0)</code>
 </blockquote>
 <p>for all values of <code>k</code> between 0 (inclusive)
 and the highest value which will ever be passed as the
-second argument to <code>indexer</code> (exclusive).
+second argument to <code>ind</code> (exclusive).
 This constraint cannot be checked by the implementation, but if
 violated will cause various other procedures to misbehave.
 </p>
@@ -115,11 +135,8 @@ violated will cause various other procedures to misbehave.
 <p>Returns a numeric range, a special case of a range specified by an
 inclusive lower bound <em>start</em>, an exclusive upper bound <em>end</em>, and a
 <em>step</em> value (default 1), all of which can be exact or inexact real
-numbers. Its comparator is the natural comparator on real numbers,
-and its indexer is
+numbers, and its indexer is
 <code>(lambda (bound n) (+ bound (* n step)))</code>.
-It is an error if <i>end</i> - <i>start</i> is not a
-multiple of <i>step</i>.
 This procedure must run in O(1) time.</p>
 
 <p>Note that an effect of this definition is that the elements of
@@ -135,25 +152,7 @@ repeatedly.  This reduces the likelihood of roundoff errors.</p>
 otherwise.
 This procedure must run in O(1) time.</p>
 
-<p><code>(range-contains?</code>&nbsp;<em>range value</em><code>)</code></p>
-<p>Returns true if <em>value</em> is an element of <em>range</em>.
-This procedure must run in O(<em>n</em>) time.</p>
-<p><code>(range-includes?</code>&nbsp;<em>range value</em><code>)</code></p>
-<p>Returns true if <em>value</em> is greater than or equal to
-<code>(range-start <em>range</em>)</code> and less
-than or equal to <code>(range-end <em>range</em>)</code>, whether or not it is
-an element of the range.
-This procedure must run in O(1) time.</p>
-
-<p><code>(range-empty?</code>&nbsp;<em>range</em><code>)</code></p>
-<p>Returns true if <em>range</em> is empty.
-This procedure must run in O(1) time.</p>
-
 <h3 id="accessors">Accessors</h3>
-
-<p><code>(range-element-comparator</code>&nbsp;<em>range</em><code>)</code></p>
-<p>Returns the comparator of <em>range</em>.
-This procedure must run in O(1) time.</p>
 
 <p><code>(range-length</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns the length (number of elements) of <em>range</em>.
@@ -185,25 +184,24 @@ This procedure must run in O(1) time.</p>
 <p>Returns two values which are ranges. The first value contains all elements
 of <em>range</em> from the zeroth element to the <em>index</em>th element
 exclusive. The second value contains all elements of <em>range</em> from the
-<em>index</em>th element inclusive to the last element.  Both ranges share
-the same element comparator with <em>range</em>.
+<em>index</em>th element inclusive to the last element.
 This procedure must run in O(1) time.</p>
 <p><code>(subrange</code>&nbsp;<em>range start end</em><code>)</code></p>
 Returns a range which contains the elements of
 <i>range</i> from index <i>start</i>, inclusive, through index
-<i>end</i>, exclusive and shares the same element comparator.
+<i>end</i>, exclusive.
 This procedure must run in O(1) time.</p>
 
 <p><code>(range-take</code>&nbsp;<em>range count</em><code>)</code><br>
 <code>(range-take-right</code>&nbsp;<em>range count</em><code>)</code></p>
 Returns a range which contains the first/last <em>count</em> elements of
-<em>range</em> and shares the same element comparator.
+<em>range</em>.
 These procedures must run in O(1) time.</p>
 
 <p><code>(range-drop</code>&nbsp;<em>range count</em><code>)</code><br>
 <code>(range-drop-right</code>&nbsp;<em>range count</em><code>)</code></p>
 <p>Returns a range which contains all except the first/last <em>count</em> elements
-of <em>range</em> and shares the same element comparator.
+of <em>range</em>.
 These procedures must run in O(1) time.</p>
 
 <p><code>(range-count</code>&nbsp;<em>pred range</em><code>)</code></p>
@@ -250,7 +248,7 @@ the last invocation, or <em>nil</em> if there was no invocation.
 These procedures must run in O(<em>n</em>) time.</p>
 <p><code>(range-reverse</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns a range which contains the same elements as <em>range</em>, but in
-reverse order, and which shares the same element comparator.
+reverse order.
 This procedure must run in O(1) time.</p>
 
 <h3 id="searching">Searching</h3>
@@ -264,15 +262,13 @@ These procedures must run in O(<em>n</em>) time.</p>
 <p><code>(range-take-while</code>&nbsp;<em>pred range</em><code>)</code><br>
 <code>(range-take-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range containing the leading/trailing elements of <em>range</em> that satisfy
-<em>pred</em> up to the first/last one that does not,
-using the same element comparator.
+<em>pred</em> up to the first/last one that does not.
 These procedures must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-drop-while pred</code>&nbsp;<em>range</em><code>)</code><br>
 <code>(range-drop-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range that omits leading/trailing elements of <em>range</em> that satisfy
-<em>pred</em> until the first/last one that does not,
-using the same element comparator.
+<em>pred</em> until the first/last one that does not.
 These procedures must run in O(<em>n</em>) time.</p>
 
 <h3 id="conversion">Conversion</h3>
@@ -300,8 +296,8 @@ advantage of SRFI 145 (<code>assume</code>) if it is present.</p>
 
 <h2>Acknowledgements</h2>
 
-<p>Without Python's <code>range</code> object, this SRFI would not exist.
-Thanks also to the contributors on the SRFI 196 mailing list.
+<p>Without <a href="https://docs.python.org/3.8/library/stdtypes.html#ranges">Python's <code>range</code> object</a>,
+this SRFI would not exist.  Thanks also to the contributors on the SRFI 196 mailing list.
 </p>
 
 <h2>Copyright</h2>
