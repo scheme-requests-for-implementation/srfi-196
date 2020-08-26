@@ -134,7 +134,6 @@ inclusive lower bound <em>start</em>, an exclusive upper bound <em>end</em>, and
 <em>step</em> value (default 1), all of which can be exact or inexact real
 numbers, and its indexer is
 <code>(lambda (bound n) (+ bound (* n step)))</code>.
-It is an error if <code>(zero? (modulo (- end start) step))</code> => <code>#f</code>.
 This procedure must run in O(1) time.</p>
 
 <p>Note that an effect of this definition is that the elements of
