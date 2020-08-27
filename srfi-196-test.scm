@@ -120,7 +120,9 @@
   (print-header "Running constructor tests...")
 
   (check (range? (numeric-range 1 -5 -1))   => #t)
-  (check (range? (numeric-range 1.3 5.3 1)) => #t))
+  (check (range? (numeric-range 1.3 5.3 1)) => #t)
+
+  (check (range-length (numeric-range 0 9 4)) => 3))
 
 ;;;; Accessors
 
@@ -170,22 +172,34 @@
 
   ;; range-take r n returns a range of length n.
   (check (range-length (range-take test-num-range 10)) => 10)
+  (check (range-length
+          (range-take test-num-range (range-length test-num-range)))
+   => (range-length test-num-range))
   (check (range->list (range-take test-num-range 5))
    => (take test-num-seq 5))
 
   ;; range-take-right r n returns a range of length n.
   (check (range-length (range-take-right test-num-range 10)) => 10)
+  (check (range-length
+          (range-take-right test-num-range (range-length test-num-range)))
+   => (range-length test-num-range))
   (check (range->list (range-take-right test-num-range 5))
    => (drop test-num-seq 15))
 
   ;; range-drop r n returns a range of length (range-length r) - n.
   (check (range-length (range-drop test-num-range 10))
    => (- (range-length test-num-range) 10))
+  (check (range-length
+          (range-drop test-num-range (range-length test-num-range)))
+   => 0)
   (check (range->list (range-drop test-num-range 15)) => (drop test-num-seq 15))
 
   ;; range-drop-right r n returns a range of length (range-length r) - n.
   (check (range-length (range-drop-right test-num-range 10))
    => (- (range-length test-num-range) 10))
+  (check (range-length
+          (range-drop-right test-num-range (range-length test-num-range)))
+   => 0)
   (check (range->list (range-drop-right test-num-range 15))
    => (take test-num-seq 5))
 
