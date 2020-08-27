@@ -37,6 +37,10 @@
 
 (define (%range-valid-index? r index)
   (and (natural? index) (< index (range-length r))))
+
+;; As the previous check, but bound is assumed to be exclusive.
+(define (%range-valid-bound? r bound)
+  (and (natural? bound) (<= bound (range-length r))))
 
 ;;;; Constructors
 
@@ -50,11 +54,10 @@
   (case-lambda
     ((start end) (numeric-range start end 1))
     ((start end step)
-     (let ((len (/ (- end start) step)))
-       (assume (and (natural? len)
-                    (or (= start end)
-                        ((if (< start end) < >) (+ start (* (- len 1) step))
-                                                end)))
+     (let ((len (exact (ceiling (/ (- end start) step)))))
+       (assume (or (= start end)
+                   ((if (< start end) < >) (+ start (* (- len 1) step))
+                                           end))
                "numeric-range: computed length is invalid")
        (raw-range start (exact len) (lambda (b n) (+ b (* n step))))))))
 
@@ -79,19 +82,22 @@
 
 (define (range-split-at r index)
   (assume (range? r))
+  (assume (%range-valid-bound? r index))
   (let ((indexer (range-indexer r)))
-    (assume (%range-valid-index? r index) "range-split: invalid index")
-    (values
-     (raw-range (range-start r) index indexer)
-     (raw-range (%range-ref-no-check r index)
-                (- (range-length r) index)
-                indexer))))
+    (cond ((= index 0)
+           (values (%empty-range-from r) r))
+          ((= index (range-length r))
+           (values r (%empty-range-from r)))
+          (else
+           (values (raw-range (range-start r) index indexer)
+                   (raw-range (%range-ref-no-check r index)
+                              (- (range-length r) index)
+                              indexer))))))
 
 (define (subrange r start end)
   (assume (range? r))
   (assume (%range-valid-index? r start) "subrange: invalid start index")
-  (assume (and (natural? end) (> end start) (<= end (range-length r)))
-          "subrange: invalid end index")
+  (assume (%range-valid-bound? r end) "subrange: invalid end index")
   (if (and (zero? start) (= end (range-length r)))
       r
       (raw-range (%range-ref-no-check r start)
@@ -100,14 +106,14 @@
 
 (define (range-take r count)
   (assume (range? r))
-  (assume (%range-valid-index? r count) "range-take: invalid count")
+  (assume (%range-valid-bound? r count) "range-take: invalid count")
   (if (zero? count)
       (%empty-range-from r)
       (raw-range (range-lower-bound r) count (range-indexer r))))
 
 (define (range-take-right r count)
   (assume (range? r))
-  (assume (%range-valid-index? r count)
+  (assume (%range-valid-bound? r count)
           "range-take-right: invalid count")
   (if (zero? count)
       (%empty-range-from r)
@@ -117,7 +123,7 @@
 
 (define (range-drop r count)
   (assume (range? r))
-  (assume (%range-valid-index? r count) "range-drop: invalid count")
+  (assume (%range-valid-bound? r count) "range-drop: invalid count")
   (if (zero? count)
       r
       (raw-range (%range-ref-no-check r count)
@@ -126,7 +132,7 @@
 
 (define (range-drop-right r count)
   (assume (range? r))
-  (assume (%range-valid-index? r count) "range-drop: invalid count")
+  (assume (%range-valid-bound? r count) "range-drop: invalid count")
   (if (zero? count)
       r
       (raw-range (range-lower-bound r)
