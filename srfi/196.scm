@@ -50,11 +50,10 @@
   (case-lambda
     ((start end) (numeric-range start end 1))
     ((start end step)
-     (let ((len (/ (- end start) step)))
-       (assume (and (natural? len)
-                    (or (= start end)
-                        ((if (< start end) < >) (+ start (* (- len 1) step))
-                                                end)))
+     (let ((len (exact (ceiling (/ (- end start) step)))))
+       (assume (or (= start end)
+                   ((if (< start end) < >) (+ start (* (- len 1) step))
+                                           end))
                "numeric-range: computed length is invalid")
        (raw-range start (exact len) (lambda (b n) (+ b (* n step))))))))
 
