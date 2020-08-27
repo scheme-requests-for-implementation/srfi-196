@@ -182,10 +182,11 @@ This procedure must run in O(1) time.</p>
 <h3 id="iteration">Iteration</h3>
 
 <p><code>(range-split-at</code>&nbsp;<em>range index</em><code>)</code></p>
-<p>Returns two values which are ranges. The first value contains all elements
-of <em>range</em> from the zeroth element to the <em>index</em>th element
-exclusive. The second value contains all elements of <em>range</em> from the
-<em>index</em>th element inclusive to the last element.
+<p>Returns two values:
+<code>(range-take</code>&nbsp;<em>range index</em><code>)</code> and
+<code>(range-drop</code>&nbsp;<em>range index</em><code>)</code>.
+It is an error if <em>index</em> is not an exact integer
+between 0 and the length of <em>range</em>, both inclusive.
 This procedure must run in O(1) time.</p>
 <p><code>(subrange</code>&nbsp;<em>range start end</em><code>)</code></p>
 <p>Returns a range which contains the elements of
