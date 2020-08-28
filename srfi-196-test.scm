@@ -69,7 +69,7 @@
         (if (eof-object? v)
             '()
             (cons v (generator->list g))))))))
-
+
 ;;;; Utility
 
 (define (identity x) x)
@@ -97,8 +97,9 @@
 
 (define test-empty-range (numeric-range 0 0))
 
+;; Produces the range {#f, #t}.
 (define test-bool-range
-  (range #f 2 (lambda (b x) (if (zero? x) b (not b)))))
+  (range 2 (lambda (n) (not (zero? n)))))
 
 ;;;; Conversion
 
@@ -115,7 +116,7 @@
    => test-num-seq)
 
   (check (vector->list (range->vector test-num-range)) => test-num-seq))
-
+
 (define (check-constructors)
   (print-header "Running constructor tests...")
 
@@ -148,7 +149,7 @@
   (check (let-values (((ra rb) (range-split-at test-bool-range 1)))
            (append (range->list ra) (range->list rb)))
    => (range->list test-bool-range))
-
+
   (check (range->list
           (subrange test-bool-range 0 (range-length test-bool-range)))
    => (range->list test-bool-range))
@@ -212,7 +213,7 @@
 
   (check (range-every number? test-num-range) => #t)
   (check (range-every even? test-num-range)   => #f)
-
+
   ;; (range-map->list f r) = (map f (range->list r))
   (let ((f not))
     (check (equal? (range-map->list f test-bool-range)
@@ -281,7 +282,7 @@
   (check (equal? (range->list (range-reverse test-num-range))
                  (reverse test-num-seq))
    => #t))
-
+
 ;;;; Searching
 
 (define (check-searching)
@@ -328,7 +329,7 @@
   (let ((pred (lambda (n) (< n 15))))
     (check (range->list (range-drop-while pred test-num-range))
      => (drop-while pred test-num-seq)))
-
+
   ;; Given a (non-existent) range-append function,
   ;;
   ;; (range-append (range-take-while p r) (range-drop-while p r)) = r
@@ -373,7 +374,7 @@
                     (range->list (range-take-while-right pred test-num-range)))
             test-num-seq)
      => #t)))
-
+
 (define (check-all)
   (check-conversion)
   (check-constructors)
