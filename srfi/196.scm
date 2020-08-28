@@ -22,8 +22,6 @@
 (define (exact-natural? x)
   (and (exact-integer? x) (not (negative? x))))
 
-(define unspecified (if #f #f))
-
 (define-record-type <range>
   (raw-range start-index length indexer)
   range?
@@ -164,7 +162,7 @@
   (let ((len (range-length r)))
     (let lp ((i 0))
       (if (>= i len)
-          unspecified
+          (if #f #f)
           (begin
            (proc (%range-ref-no-check r i))
            (lp (+ i 1)))))))
