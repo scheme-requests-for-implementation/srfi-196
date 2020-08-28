@@ -59,7 +59,7 @@
                    ((if (< start end) < >) (+ start (* (- len 1) step))
                                            end))
                "numeric-range: computed length is invalid")
-       (raw-range 0 (exact len) (lambda (n) (+ start (* n step))))))))
+       (raw-range 0 len (lambda (n) (+ start (* n step))))))))
 
 ;;;; Accessors
 
