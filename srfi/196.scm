@@ -19,8 +19,8 @@
 ;;; TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 ;;; SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-(define (natural? x)
-  (and (integer? x) (not (negative? x))))
+(define (exact-natural? x)
+  (and (exact-integer? x) (not (negative? x))))
 
 (define unspecified (if #f #f))
 
@@ -36,19 +36,19 @@
   (raw-range (range-start-index r) 0 (range-indexer r)))
 
 (define (%range-valid-index? r index)
-  (and (natural? index)
+  (and (exact-natural? index)
        (< index (range-length r))))
 
 ;; As the previous check, but bound is assumed to be exclusive.
 (define (%range-valid-bound? r bound)
-  (and (natural? bound)
+  (and (exact-natural? bound)
        (<= bound (range-length r))))
 
 ;;;; Constructors
 
 ;; The primary range constructor does some extra consistency checking.
 (define (range length indexer)
-  (assume (natural? length))
+  (assume (exact-natural? length))
   (assume (procedure? indexer))
   (raw-range 0 length indexer))
 
