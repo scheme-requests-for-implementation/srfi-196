@@ -84,12 +84,12 @@ greatly reduced compared to accumulated error by repeated adding.
 </p>
 <ul>
 <li>The basic Latin capital letters A-Z can be specified using
-a range constructed by <code>(range #\A 26
-(lambda (c n) (integer->char (+ (char->integer c) n))))</code>.
+a range constructed by <code>(range 26
+(lambda (n) (integer->char (+ 65 n))))</code>.
 </li>
 <li>
 The geometric sequence 1, 1/2, 1/4, &hellip;, 1/512 can be expressed by
-<code>(range 1/2 10 expt)</code>.
+<code>(range 10 (lambda (n) (expt 1/2 n)))</code>.
 </li></ul>
 
 <h2>Specification</h2>
