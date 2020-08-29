@@ -120,10 +120,16 @@
 (define (check-constructors)
   (print-header "Running constructor tests...")
 
-  (check (range? (numeric-range 1 -5 -1))   => #t)
-  (check (range? (numeric-range 1.3 5.3 1)) => #t)
-
-  (check (range-length (numeric-range 0 9 4)) => 3))
+  (check (%range-empty? (numeric-range 1 1))      => #t)
+  (check (range->list (numeric-range 1 -5 -1))    => (iota 6 1 -1))
+  (check (range->list (numeric-range 1.3 5.3))    => (iota 4 1.3))
+  (check (range->list (numeric-range 0 9 4))      => (iota 3 0 4))
+  (check (%range-empty? (numeric-range 0 10 -1))  => #t)
+  (check (%range-empty? (numeric-range 0 -10))    => #t)
+  (check (range->list (numeric-range -2 2))       => (iota 4 -2))
+  (check (range->list (numeric-range 2 -2 -1))    => (iota 4 2 -1))
+  (check (range->list (numeric-range -4 -8 -1))   => (iota 4 -4 -1))
+  (check (range->list (numeric-range -1 -3 -0.6)) => (iota 4 -1 -0.6)))
 
 ;;;; Accessors
 
