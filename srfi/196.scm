@@ -54,13 +54,18 @@
   (case-lambda
     ((start end) (numeric-range start end 1))
     ((start end step)
+     (assume (not (zero? step)) "numeric-range: zero-valued step")
      (let ((len (exact (ceiling (max 0 (/ (- end start) step))))))
+       ;; Try to ensure that we can compute a correct range from the
+       ;; given parameters, i.e. one not plagued by roundoff errors.
        (assume (cond ((and (positive? step) (< start end))
-                      (< (+ start (* (- len 1) step)) end))
+                      (and (> (+ start step) start)
+                           (< (+ start (* (- len 1) step)) end)))
                      ((and (negative? step) (> start end))
-                      (> (+ start (* (- len 1) step)) end))
+                      (and (< (+ start step) start)
+                           (> (+ start (* (- len 1) step)) end)))
                      (else #t))
-               "numeric-range: computed length is invalid")
+               "numeric-range: invalid parameters")
        (raw-range 0 len (lambda (n) (+ start (* n step))))))))
 
 ;;;; Accessors

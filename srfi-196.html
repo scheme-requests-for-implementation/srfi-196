@@ -133,7 +133,9 @@ numbers.  This range produces the sequence</p>
 <code>(+&nbsp;</code><em>start</em><code> (*&nbsp;</code><em>n step</em><code>))</code>
 &lt; <em>end</em> if <em>step</em> is positive, or such that
 <code>(+&nbsp;</code><em>start</em><code> (*&nbsp;</code><em>n step</em><code>))</code>
-&gt; <em>end</em> if <em>step</em> is negative.
+&gt; <em>end</em> if <em>step</em> is negative. It is is an error if an
+<em>n</em> satisfying this condition cannot be determined, or if
+<em>step</em> is numerically zero.
 This procedure must run in O(1) time.</p>
 
 <p>Note that an effect of this definition is that the elements of
