@@ -55,8 +55,11 @@
     ((start end) (numeric-range start end 1))
     ((start end step)
      (let ((len (exact (ceiling (max 0 (/ (- end start) step))))))
-       (assume (or (= start end)
-                   (< (abs (+ start (* (- len 1) step))) (abs end)))
+       (assume (cond ((and (positive? step) (< start end))
+                      (< (+ start (* (- len 1) step)) end))
+                     ((and (negative? step) (> start end))
+                      (> (+ start (* (- len 1) step)) end))
+                     (else #t))
                "numeric-range: computed length is invalid")
        (raw-range 0 len (lambda (n) (+ start (* n step))))))))
 
