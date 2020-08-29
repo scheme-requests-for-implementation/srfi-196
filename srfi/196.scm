@@ -274,3 +274,7 @@
            (let ((v (%range-ref-no-check r i)))
              (set! i (+ i 1))
              v))))))
+
+(define (vector->range vec)
+  (assume (vector? vec))
+  (raw-range 0 (vector-length vec) (lambda (i) (vector-ref vec i))))

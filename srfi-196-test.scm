@@ -115,7 +115,14 @@
   (check (generator->list (range->generator test-num-range))
    => test-num-seq)
 
-  (check (vector->list (range->vector test-num-range)) => test-num-seq))
+  (check (vector->list (range->vector test-num-range)) => test-num-seq)
+
+  (let ((vec (vector 1 3 5 7 9)))
+    (check (range-length (vector->range vec))  => (vector-length vec))
+    (check (range-start (vector->range vec))   => (vector-ref vec 0))
+    (check (range-end (vector->range vec))     => (vector-ref vec 4))
+    (check (range->vector (vector->range vec)) => vec))
+)
 
 (define (check-constructors)
   (print-header "Running constructor tests...")
