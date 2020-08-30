@@ -119,8 +119,8 @@
 
   (let ((vec (vector 1 3 5 7 9)))
     (check (range-length (vector->range vec))  => (vector-length vec))
-    (check (range-start (vector->range vec))   => (vector-ref vec 0))
-    (check (range-end (vector->range vec))     => (vector-ref vec 4))
+    (check (range-first (vector->range vec))   => (vector-ref vec 0))
+    (check (range-last (vector->range vec))    => (vector-ref vec 4))
     (check (range->vector (vector->range vec)) => vec))
 )
 
@@ -286,12 +286,12 @@
                    (fold-right proc nil test-num-seq))
      => #t))
 
-  (check (eqv? (range-start (range-reverse test-bool-range))
-               (range-end test-bool-range))
+  (check (eqv? (range-first (range-reverse test-bool-range))
+               (range-last test-bool-range))
    => #t)
 
-  (check (eqv? (range-end (range-reverse test-bool-range))
-               (range-start test-bool-range))
+  (check (eqv? (range-last (range-reverse test-bool-range))
+               (range-first test-bool-range))
    => #t)
 
   (check (equal? (range->list (range-reverse test-num-range))
