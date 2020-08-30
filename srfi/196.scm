@@ -157,11 +157,25 @@
    (lambda (return)
      (range-fold (lambda (x _) (or (pred x) (return #f))) #t r))))
 
+(define (range-map proc r)
+  (assume (procedure? proc))
+  (assume (range? r))
+  (let ((ind (range-indexer r)))
+    (raw-range (range-start-index r)
+	       (range-length r)
+	       (lambda (i) (proc (ind i))))))
+
 (define (range-map->list proc r)
   (assume (procedure? proc))
   (range-fold-right (lambda (elem xs) (cons (proc elem) xs))
                     '()
                     r))
+
+(define (range-map->vector proc r)
+  (assume (procedure? proc))
+  (assume (range? r))
+  (vector-unfold (lambda (i) (proc (%range-ref-no-check r i)))
+		 (range-length r)))
 
 (define (range-for-each proc r)
   (assume (procedure? proc))
@@ -200,6 +214,9 @@
                     '()
                     r))
 
+(define (range-filter->vector pred r)
+  (list->vector (range-filter->list pred r)))
+
 (define (range-remove->list pred r)
   (assume (procedure? pred))
   (assume (range? r))
@@ -207,6 +224,9 @@
                       (if (pred x) xs (cons x xs)))
                     '()
                     r))
+
+(define (range-remove->vector pred r)
+  (list->vector (range-remove->list pred r)))
 
 (define (range-reverse r)
   (assume (range? r))
