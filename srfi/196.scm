@@ -54,11 +54,18 @@
   (case-lambda
     ((start end) (numeric-range start end 1))
     ((start end step)
-     (let ((len (exact (ceiling (/ (- end start) step)))))
-       (assume (or (= start end)
-                   ((if (< start end) < >) (+ start (* (- len 1) step))
-                                           end))
-               "numeric-range: computed length is invalid")
+     (assume (not (zero? step)) "numeric-range: zero-valued step")
+     (let ((len (exact (ceiling (max 0 (/ (- end start) step))))))
+       ;; Try to ensure that we can compute a correct range from the
+       ;; given parameters, i.e. one not plagued by roundoff errors.
+       (assume (cond ((and (positive? step) (< start end))
+                      (and (> (+ start step) start)
+                           (< (+ start (* (- len 1) step)) end)))
+                     ((and (negative? step) (> start end))
+                      (and (< (+ start step) start)
+                           (> (+ start (* (- len 1) step)) end)))
+                     (else #t))
+               "numeric-range: invalid parameters")
        (raw-range 0 len (lambda (n) (+ start (* n step))))))))
 
 ;;;; Accessors
@@ -272,3 +279,7 @@
            (let ((v (%range-ref-no-check r i)))
              (set! i (+ i 1))
              v))))))
+
+(define (vector->range vec)
+  (assume (vector? vec))
+  (raw-range 0 (vector-length vec) (lambda (i) (vector-ref vec i))))

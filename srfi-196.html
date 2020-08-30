@@ -122,7 +122,7 @@ This procedure must run in O(1) time.</p>
 <p>Returns a numeric range, a special case of a range specified by an
 inclusive lower bound <em>start</em>, an exclusive upper bound <em>end</em>, and a
 <em>step</em> value (default 1), all of which can be exact or inexact real
-numbers.  This range produces the sequence:</p>
+numbers.  This range produces the sequence</p>
 <blockquote>
 <em>start</em><code>, (+&nbsp;</code><em>start&nbsp;step</em><code>),
 (+&nbsp;</code><em>start</em><code>&nbsp;(* 2 </code><em>step</em><code>)),
@@ -131,7 +131,11 @@ numbers.  This range produces the sequence:</p>
 </blockquote>
 <p>where <em>n</em> is the greatest integer such that
 <code>(+&nbsp;</code><em>start</em><code> (*&nbsp;</code><em>n step</em><code>))</code>
-&lt; <em>end</em>.
+&lt; <em>end</em> if <em>step</em> is positive, or such that
+<code>(+&nbsp;</code><em>start</em><code> (*&nbsp;</code><em>n step</em><code>))</code>
+&gt; <em>end</em> if <em>step</em> is negative. It is is an error if an
+<em>n</em> satisfying this condition cannot be determined, or if
+<em>step</em> is numerically zero.
 This procedure must run in O(1) time.</p>
 
 <p>Note that an effect of this definition is that the elements of
@@ -278,6 +282,10 @@ These procedures must run in O(<em>n</em>) time.</p>
 in order.
 This procedure must run in O(1) time,
 and each call of the generator must run in O(1) time.
+
+<p><code>(vector-&gt;range</code>&nbsp;<em>vec</em><code>)</code></p>
+<p>Returns a range containing the elements of the vector <em>vec</em> in order.
+This procedure must run in O(1) time.</p>
 
 <h2>Implementation</h2>
 
