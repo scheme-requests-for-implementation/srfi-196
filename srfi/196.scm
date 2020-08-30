@@ -71,6 +71,7 @@
 ;;;; Accessors
 
 (define (range-ref r index)
+  (assume (range? r))
   (assume (%range-valid-index? r index) "range-ref: invalid index")
   ((range-indexer r) (+ index (range-start-index r))))
 
@@ -270,7 +271,6 @@
 ;;;; Conversion
 
 (define (range->list r)
-  (assume (range? r))
   (range-fold-right cons '() r))
 
 (define (range->vector r)
