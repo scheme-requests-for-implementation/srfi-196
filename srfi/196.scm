@@ -103,6 +103,7 @@
   (assume (range? r))
   (assume (%range-valid-index? r start) "subrange: invalid start index")
   (assume (%range-valid-bound? r end) "subrange: invalid end index")
+  (assume (not (negative? (- end start))) "subrange: invalid subrange")
   (if (and (zero? start) (= end (range-length r)))
       r
       (raw-range (+ (range-start-index r) start)
