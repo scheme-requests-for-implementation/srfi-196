@@ -3,6 +3,18 @@
           (scheme case-lambda))
 
   (cond-expand
+    ((library (srfi 133))
+     (import (only (srfi 133) vector-unfold)))
+    (else
+     (begin
+      ;; The "seedless" case is all we need.
+      (define (vector-unfold f len)
+        (let ((res (make-vector len)))
+          (cond ((= i len) res)
+                (else (vector-set! res i (f i))
+                      (lp (+ i 1)))))))))
+
+  (cond-expand
     ((library (srfi 145))
      (import (srfi 145)))
     (else

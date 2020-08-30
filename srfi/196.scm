@@ -158,12 +158,7 @@
      (range-fold (lambda (x _) (or (pred x) (return #f))) #t r))))
 
 (define (range-map proc r)
-  (assume (procedure? proc))
-  (assume (range? r))
-  (let ((ind (range-indexer r)))
-    (raw-range (range-start-index r)
-	       (range-length r)
-	       (lambda (i) (proc (ind i))))))
+  (vector->range (range-map->vector proc r)))
 
 (define (range-map->list proc r)
   (assume (procedure? proc))
@@ -280,14 +275,8 @@
 
 (define (range->vector r)
   (assume (range? r))
-  (let* ((len (range-length r))
-         (vec (make-vector len)))
-    (let lp ((i 0))
-      (if (= i len)
-          vec
-          (begin
-           (vector-set! vec i (%range-ref-no-check r i))
-           (lp (+ i 1)))))))
+  (vector-unfold (lambda (i) (%range-ref-no-check r i))
+                 (range-length r)))
 
 (define (range->generator r)
   (assume (range? r))
