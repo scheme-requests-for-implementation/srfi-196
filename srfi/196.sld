@@ -12,7 +12,7 @@
   (export range numeric-range
           range?
           range-length range-indexer range-ref
-          range-start range-end
+          range-first range-last
           subrange
           range-split-at range-take range-take-right range-drop range-drop-right
           range-count range-map->list range-for-each range-fold range-fold-right

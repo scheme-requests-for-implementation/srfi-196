@@ -76,9 +76,9 @@
     ((_ r index)
      ((range-indexer r) (+ index (range-start-index r))))))
 
-(define (range-start r) (%range-ref-no-check r (range-start-index r)))
+(define (range-first r) (%range-ref-no-check r (range-start-index r)))
 
-(define (range-end r) (%range-ref-no-check r (- (range-length r) 1)))
+(define (range-last r) (%range-ref-no-check r (- (range-length r) 1)))
 
 ;;;; Iteration
 

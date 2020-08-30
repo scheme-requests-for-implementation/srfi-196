@@ -70,7 +70,8 @@ The range objects of this SRFI represent such sequences using only
 a small fixed amount of storage.  Using
 <code>(range-for-each (lambda (i) ...) (numeric-range 0 1000000))</code>
 iterates a million times but with less space overhead than
-<code>iota</code>'s list of ten elements.</p>
+<code>iota</code>'s list of ten elements.
+They can be thought of as compactly stored vectors.</p>
 
 <p>In addition, there are other sequences besides integers from
 which a range may be drawn.  In particular, inexact numbers can
@@ -141,6 +142,11 @@ a range over inexact numbers are enumerated by multiplying the index
 by the step value rather than by adding the step value to itself
 repeatedly.  This reduces the likelihood of roundoff errors.</p>
 
+<p><code>(vector->range</code>&nbsp;<em>vector</em><code>)</code></p>
+<p>Returns a range whose elements are those of <em>vector</em>.
+The size of the result is fixed once the size of <em>vector</em>
+has been excluded.  It is an error to mutate <em>vector</em>.</p>
+
 
 <h3 id="predicates">Predicates</h3>
 
@@ -165,12 +171,12 @@ This procedure must run in O(1) time.</p>
 <em>range</em>.
 This procedure must run in O(<em>n</em>) time.</p>
 
-<p><code>(range-start</code>&nbsp;<em>range</em><code>)</code></p>
+<p><code>(range-first</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Equivalent to <code>(range-ref</code>&nbsp;<em>range</em>
 <code>0)</code>.
 This procedure must run in O(1) time.</p>
 
-<p><code>(range-end</code>&nbsp;<em>range</em><code>)</code></p>
+<p><code>(range-last</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Equivalent to <code>(range-ref</code>&nbsp;<em>range</em> <code>(-
 (range-length</code>&nbsp;<em>range</em><code>) 1))</code>.
 This procedure must run in O(1) time.</p>
