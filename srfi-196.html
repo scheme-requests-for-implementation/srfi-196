@@ -199,13 +199,13 @@ This procedure must run in O(1) time.</p>
 <i>end</i>, exclusive.
 This procedure must run in O(1) time.</p>
 
-<p><code>(range-take</code>&nbsp;<em>range count</em><code>)</code><br>
+<p><code>(range-take</code>&nbsp;<em>range count</em><code>)</code><br/>
 <code>(range-take-right</code>&nbsp;<em>range count</em><code>)</code></p>
 <p>Returns a range which contains the first/last <em>count</em> elements of
 <em>range</em>.
 These procedures must run in O(1) time.</p>
 
-<p><code>(range-drop</code>&nbsp;<em>range count</em><code>)</code><br>
+<p><code>(range-drop</code>&nbsp;<em>range count</em><code>)</code><br/>
 <code>(range-drop-right</code>&nbsp;<em>range count</em><code>)</code></p>
 <p>Returns a range which contains all except the first/last <em>count</em> elements
 of <em>range</em>.
@@ -229,24 +229,30 @@ specifically it returns the last value returned by <em>pred</em> or
 is returned.
 This procedure must run in O(<em>n</em>) time.</p>
 
-<p><code>(range-map-&gt;list</code>&nbsp;<em>proc range</em><code>)</code></p>
-<p>Returns a list of the results of applying <em>proc</em> to each
+<p><code>(range-map</code>&nbsp;<em>proc range</em><code>)</code><br/>
+<code>(range-map-&gt;list</code>&nbsp;<em>proc range</em><code>)</code><br/>
+<code>(range-map-&gt;vector</code>&nbsp;<em>proc range</em><code>)</code></p>
+<p>Returns a range/list/vector of the results of applying <em>proc</em> to each
 element of <em>range</em> in order. However, the order in which
 <em>proc</em> is actually applied to the elements is unspecified.
-This procedure must run in O(<em>n</em>) time.</p>
+These procedures must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-for-each</code>&nbsp;<em>proc range</em><code>)</code></p>
 <p>Applies <em>proc</em> to each element of <em>range</em> in order. Returns an
 unspecified result.
 This procedure must run in O(<em>n</em>) time.</p>
 
-<p><code>(range-filter-&gt;list</code>&nbsp;<em>pred range</em><code>)</code><br>
-<code>(range-remove-&gt;list</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns a list containing the elements of <em>range</em> that satisfy / do
+<p><code>(range-filter</code>&nbsp;<em>pred range</em><code>)</code><br/>
+<code>(range-filter-&gt;list</code>&nbsp;<em>pred range</em><code>)</code><br/>
+<code>(range-filter-&gt;vector</code>&nbsp;<em>pred range</em><code>)</code><br/>
+<code>(range-remove</code>&nbsp;<em>pred range</em><code>)</code><br/>
+<code>(range-remove-&gt;list</code>&nbsp;<em>pred range</em><code>)</code><br/>
+<code>(range-remove-&gt;vector</code>&nbsp;<em>pred range</em><code>)</code></p>
+<p>Returns a range/list/vector containing the elements of <em>range</em> that satisfy / do
 not satisfy <em>pred</em>.
-This procedure must run in O(<em>n</em>) time.</p>
+These procedures must run in O(<em>n</em>) time.</p>
 
-<p><code>(range-fold</code>&nbsp;<em>proc nil range</em><code>)</code><br>
+<p><code>(range-fold</code>&nbsp;<em>proc nil range</em><code>)</code><br/>
 <code>(range-fold-right</code>&nbsp;<em>proc nil range</em><code>)</code></p>
 <p>Invokes <em>proc</em> on each member of <em>range</em> in order / reverse order, passing the
 result of the previous invocation as a second argument. For the first
@@ -260,19 +266,19 @@ This procedure must run in O(1) time.</p>
 
 <h3 id="searching">Searching</h3>
 
-<p><code>(range-index</code>&nbsp;<em>pred range</em><code>)</code><br>
+<p><code>(range-index</code>&nbsp;<em>pred range</em><code>)</code><br/>
 <code>(range-index-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns the index of the first/last element of <em>range</em> that satisfies
 <em>pred</em>, or <code>#f</code> if there is none.
 These procedures must run in O(<em>n</em>) time.</p>
 
-<p><code>(range-take-while</code>&nbsp;<em>pred range</em><code>)</code><br>
+<p><code>(range-take-while</code>&nbsp;<em>pred range</em><code>)</code><br/>
 <code>(range-take-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range containing the leading/trailing elements of <em>range</em> that satisfy
 <em>pred</em> up to the first/last one that does not.
 These procedures must run in O(<em>n</em>) time.</p>
 
-<p><code>(range-drop-while pred</code>&nbsp;<em>range</em><code>)</code><br>
+<p><code>(range-drop-while pred</code>&nbsp;<em>range</em><code>)</code><br/>
 <code>(range-drop-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range that omits leading/trailing elements of <em>range</em> that satisfy
 <em>pred</em> until the first/last one that does not.
@@ -280,7 +286,7 @@ These procedures must run in O(<em>n</em>) time.</p>
 
 <h3 id="conversion">Conversion</h3>
 
-<p><code>(range-&gt;list</code>&nbsp;<em>range</em><code>)</code><br>
+<p><code>(range-&gt;list</code>&nbsp;<em>range</em><code>)</code><br/>
 <code>(range-&gt;vector</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns a list/vector containing the elements of <em>range</em> in order.
 These procedures must run in O(<em>n</em>) time.</p>
