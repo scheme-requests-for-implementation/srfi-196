@@ -82,6 +82,9 @@
     ((_ r index)
      ((range-indexer r) (+ index (range-start-index r))))))
 
+(define (%range-ref-no-check* r index)
+  ((range-indexer r) (+ index (range-start-index r))))
+
 (define (range-first r) (%range-ref-no-check r (range-start-index r)))
 
 (define (range-last r) (%range-ref-no-check r (- (range-length r) 1)))
@@ -147,24 +150,24 @@
 
 (define (range-count pred r)
   (assume (procedure? pred))
-  (range-fold (lambda (x c) (if (pred x) (+ c 1) c)) 0 r))
+  (range-fold (lambda (c x) (if (pred x) (+ c 1) c)) 0 r))
 
 (define (range-any pred r)
   (assume (procedure? pred))
-  (range-fold (lambda (x last) (or (pred x) last)) #f r))
+  (range-fold (lambda (last x) (or (pred x) last)) #f r))
 
 (define (range-every pred r)
   (assume (procedure? pred))
   (call-with-current-continuation
    (lambda (return)
-     (range-fold (lambda (x _) (or (pred x) (return #f))) #t r))))
+     (range-fold (lambda (_ x) (or (pred x) (return #f))) #t r))))
 
 (define (range-map proc r)
   (vector->range (range-map->vector proc r)))
 
 (define (range-map->list proc r)
   (assume (procedure? proc))
-  (range-fold-right (lambda (elem xs) (cons (proc elem) xs))
+  (range-fold-right (lambda (xs elem) (cons (proc elem) xs))
                     '()
                     r))
 
@@ -185,23 +188,47 @@
            (proc (%range-ref-no-check r i))
            (lp (+ i 1)))))))
 
-(define (range-fold proc nil r)
-  (assume (procedure? proc))
-  (assume (range? r))
-  (let ((len (range-length r)))
-    (let lp ((i 0) (acc nil))
-      (if (>= i len)
-          acc
-          (lp (+ i 1) (proc (%range-ref-no-check r i) acc))))))
+(define range-fold
+  (case-lambda
+    ((proc nil r)                       ; one-range fast path
+     (assume (procedure? proc))
+     (assume (range? r))
+     (let ((len (range-length r)))
+       (let lp ((i 0) (acc nil))
+         (if (= i len)
+             acc
+             (lp (+ i 1) (proc acc (%range-ref-no-check r i)))))))
+    ((proc nil . rs)                    ; variadic path
+     (assume (procedure? proc))
+     (assume (pair? rs))
+     (let ((len (reduce max 0 (map range-length rs))))
+       (let lp ((i 0) (acc nil))
+         (if (= i len)
+             acc
+             (lp (+ i 1)
+                 (apply proc acc (map (lambda (r)
+                                        (%range-ref-no-check* r i))
+                                      rs)))))))))
 
-(define (range-fold-right proc nil r)
-  (assume (procedure? proc))
-  (assume (range? r))
-  (let ((len (range-length r)))
-    (let rec ((i 0))
-      (if (>= i len)
-          nil
-          (proc (%range-ref-no-check r i) (rec (+ i 1)))))))
+(define range-fold-right
+  (case-lambda
+    ((proc nil r)                       ; one-range fast path
+     (assume (procedure? proc))
+     (assume (range? r))
+     (let ((len (range-length r)))
+       (let rec ((i 0))
+         (if (= i len)
+             nil
+             (proc (rec (+ i 1)) (%range-ref-no-check r i))))))
+    ((proc nil . rs)                    ; variadic path
+     (assume (procedure? proc))
+     (assume (pair? rs))
+     (let ((len (reduce max 0 (map range-length rs))))
+       (let rec ((i 0))
+         (if (= i len)
+             nil
+             (proc (rec (+ i 1))
+                   (map (lambda (r) (%range-ref-no-check* r i)) rs))))))))
 
 (define (range-filter pred r)
   (vector->range (range-filter->vector pred r)))
@@ -209,7 +236,7 @@
 (define (range-filter->list pred r)
   (assume (procedure? pred))
   (assume (range? r))
-  (range-fold-right (lambda (x xs)
+  (range-fold-right (lambda (xs x)
                       (if (pred x) (cons x xs) xs))
                     '()
                     r))
@@ -223,7 +250,7 @@
 (define (range-remove->list pred r)
   (assume (procedure? pred))
   (assume (range? r))
-  (range-fold-right (lambda (x xs)
+  (range-fold-right (lambda (xs x)
                       (if (pred x) xs (cons x xs)))
                     '()
                     r))
@@ -278,7 +305,7 @@
 ;;;; Conversion
 
 (define (range->list r)
-  (range-fold-right cons '() r))
+  (range-fold-right xcons '() r))
 
 (define (range->vector r)
   (assume (range? r))

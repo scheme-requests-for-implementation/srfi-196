@@ -1,6 +1,7 @@
 (define-library (srfi 196)
   (import (scheme base)
-          (scheme case-lambda))
+          (scheme case-lambda)
+          (only (srfi 1) reduce xcons))
 
   (cond-expand
     ((library (srfi 133))

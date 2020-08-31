@@ -281,7 +281,7 @@
    => #t)
 
   ;; (range-fold (lambda (b) (+ 1 b)) 0 r) = (range-length r)
-  (check (= (range-fold (lambda (_ b) (+ b 1)) 0 test-num-range)
+  (check (= (range-fold (lambda (b _) (+ b 1)) 0 test-num-range)
             (range-length test-num-range))
    => #t)
 
@@ -291,7 +291,7 @@
    => #t)
 
   ;; (range-fold-right (lambda (b) (+ 1 b)) 0 r) = (range-length r)
-  (check (= (range-fold-right (lambda (_ b) (+ b 1)) 0 test-num-range)
+  (check (= (range-fold-right (lambda (b _) (+ b 1)) 0 test-num-range)
             (range-length test-num-range))
    => #t)
 
