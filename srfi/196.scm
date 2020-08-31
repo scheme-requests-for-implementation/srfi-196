@@ -208,6 +208,8 @@
            (lp (+ i 1)))))))
 
 (define (%range-fold-1 proc nil r)
+  (assume (procedure? proc))
+  (assume (range? r))
   (let ((len (range-length r)))
     (let lp ((i 0) (acc nil))
       (if (= i len)
@@ -233,6 +235,8 @@
                                       rs)))))))))
 
 (define (%range-fold-right-1 proc nil r)
+  (assume (procedure? proc))
+  (assume (range? r))
   (let ((len (range-length r)))
     (let rec ((i 0))
       (if (= i len)
