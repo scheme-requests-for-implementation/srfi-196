@@ -71,6 +71,7 @@
 ;;;; Accessors
 
 (define (range-ref r index)
+  (assume (range? r))
   (assume (%range-valid-index? r index) "range-ref: invalid index")
   ((range-indexer r) (+ index (range-start-index r))))
 
@@ -102,6 +103,7 @@
   (assume (range? r))
   (assume (%range-valid-index? r start) "subrange: invalid start index")
   (assume (%range-valid-bound? r end) "subrange: invalid end index")
+  (assume (not (negative? (- end start))) "subrange: invalid subrange")
   (if (and (zero? start) (= end (range-length r)))
       r
       (raw-range (+ (range-start-index r) start)
@@ -157,11 +159,20 @@
    (lambda (return)
      (range-fold (lambda (x _) (or (pred x) (return #f))) #t r))))
 
+(define (range-map proc r)
+  (vector->range (range-map->vector proc r)))
+
 (define (range-map->list proc r)
   (assume (procedure? proc))
   (range-fold-right (lambda (elem xs) (cons (proc elem) xs))
                     '()
                     r))
+
+(define (range-map->vector proc r)
+  (assume (procedure? proc))
+  (assume (range? r))
+  (vector-unfold (lambda (i) (proc (%range-ref-no-check r i)))
+		 (range-length r)))
 
 (define (range-for-each proc r)
   (assume (procedure? proc))
@@ -200,6 +211,9 @@
                     '()
                     r))
 
+(define (range-filter->vector pred r)
+  (list->vector (range-filter->list pred r)))
+
 (define (range-remove->list pred r)
   (assume (procedure? pred))
   (assume (range? r))
@@ -207,6 +221,9 @@
                       (if (pred x) xs (cons x xs)))
                     '()
                     r))
+
+(define (range-remove->vector pred r)
+  (list->vector (range-remove->list pred r)))
 
 (define (range-reverse r)
   (assume (range? r))
@@ -255,19 +272,12 @@
 ;;;; Conversion
 
 (define (range->list r)
-  (assume (range? r))
   (range-fold-right cons '() r))
 
 (define (range->vector r)
   (assume (range? r))
-  (let* ((len (range-length r))
-         (vec (make-vector len)))
-    (let lp ((i 0))
-      (if (= i len)
-          vec
-          (begin
-           (vector-set! vec i (%range-ref-no-check r i))
-           (lp (+ i 1)))))))
+  (vector-unfold (lambda (i) (%range-ref-no-check r i))
+                 (range-length r)))
 
 (define (range->generator r)
   (assume (range? r))

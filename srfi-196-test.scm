@@ -119,8 +119,8 @@
 
   (let ((vec (vector 1 3 5 7 9)))
     (check (range-length (vector->range vec))  => (vector-length vec))
-    (check (range-start (vector->range vec))   => (vector-ref vec 0))
-    (check (range-end (vector->range vec))     => (vector-ref vec 4))
+    (check (range-first (vector->range vec))   => (vector-ref vec 0))
+    (check (range-last (vector->range vec))    => (vector-ref vec 4))
     (check (range->vector (vector->range vec)) => vec))
 )
 
@@ -138,7 +138,8 @@
   (check (range->list (numeric-range -2 2))       => (iota 4 -2))
   (check (range->list (numeric-range 2 -2 -1))    => (iota 4 2 -1))
   (check (range->list (numeric-range -4 -8 -1))   => (iota 4 -4 -1))
-  (check (range->list (numeric-range -1 -3 -0.6)) => (iota 4 -1 -0.6)))
+  (check (range->list (numeric-range -1 -3 -0.6)) => (iota 4 -1 -0.6))
+)
 
 ;;;; Accessors
 
@@ -146,7 +147,8 @@
   (print-header "Running accessor tests...")
 
   (check (range-ref test-num-range 0)  => 10)
-  (check (range-ref test-bool-range 1) => #t))
+  (check (range-ref test-bool-range 1) => #t)
+)
 
 ;;;; Iteration
 
@@ -230,10 +232,9 @@
   (check (range-every even? test-num-range)   => #f)
 
   ;; (range-map->list f r) = (map f (range->list r))
-  (let ((f not))
-    (check (equal? (range-map->list f test-bool-range)
-                   (map f (range->list test-bool-range)))
-     => #t))
+  (check (equal? (range-map->list not test-bool-range)
+                 (map not (range->list test-bool-range)))
+   => #t)
 
   (check (let ((v #f))
            (range-for-each (lambda (x) (set! v x)) test-bool-range)
@@ -247,10 +248,9 @@
   (check (null? (range-filter->list never test-bool-range)) => #t)
 
   ;; (range-filter->list pred r) = (filter pred (range->list r))
-  (let ((pred even?))
-    (check (equal? (range-filter->list pred test-num-range)
-                   (filter pred test-num-seq))
-     => #t))
+  (check (equal? (range-filter->list even? test-num-range)
+                 (filter even? test-num-seq))
+   => #t)
 
   (check (equal? (range-remove->list never test-bool-range)
                  (range->list test-bool-range))
@@ -259,10 +259,9 @@
   (check (null? (range-remove->list always test-bool-range)) => #t)
 
   ;; (range-remove->list pred r) = (remove pred (range->list r))
-  (let ((pred even?))
-    (check (equal? (range-remove->list pred test-num-range)
-                   (remove pred test-num-seq))
-     => #t))
+  (check (equal? (range-remove->list even? test-num-range)
+                 (remove even? test-num-seq))
+   => #t)
 
   ;; (range-fold (lambda (b) (+ 1 b)) 0 r) = (range-length r)
   (check (= (range-fold (lambda (_ b) (+ b 1)) 0 test-num-range)
@@ -270,10 +269,9 @@
    => #t)
 
   ;; (range-fold proc nil r) = (fold proc nil (range->list r))
-  (let ((proc +) (nil 0))  ; sum over range
-    (check (equal? (range-fold proc nil test-num-range)
-                   (fold proc nil test-num-seq))
-     => #t))
+  (check (equal? (range-fold + 0 test-num-range)
+                 (fold + 0 test-num-seq))
+   => #t)
 
   ;; (range-fold-right (lambda (b) (+ 1 b)) 0 r) = (range-length r)
   (check (= (range-fold-right (lambda (_ b) (+ b 1)) 0 test-num-range)
@@ -281,22 +279,22 @@
    => #t)
 
   ;; (range-fold-right r proc nil) = (fold-right proc nil (range->list r))
-  (let ((proc +) (nil 0))  ; sum over range
-    (check (equal? (range-fold-right proc nil test-num-range)
-                   (fold-right proc nil test-num-seq))
-     => #t))
-
-  (check (eqv? (range-start (range-reverse test-bool-range))
-               (range-end test-bool-range))
+  (check (equal? (range-fold-right + 0 test-num-range)
+                 (fold-right + 0 test-num-seq))
    => #t)
 
-  (check (eqv? (range-end (range-reverse test-bool-range))
-               (range-start test-bool-range))
+  (check (eqv? (range-first (range-reverse test-bool-range))
+               (range-last test-bool-range))
+   => #t)
+
+  (check (eqv? (range-last (range-reverse test-bool-range))
+               (range-first test-bool-range))
    => #t)
 
   (check (equal? (range->list (range-reverse test-num-range))
                  (reverse test-num-seq))
-   => #t))
+   => #t)
+)
 
 ;;;; Searching
 
@@ -388,7 +386,8 @@
             (append (range->list (range-drop-while-right pred test-num-range))
                     (range->list (range-take-while-right pred test-num-range)))
             test-num-seq)
-     => #t)))
+     => #t))
+)
 
 (define (check-all)
   (check-conversion)
