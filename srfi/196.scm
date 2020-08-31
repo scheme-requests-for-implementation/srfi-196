@@ -148,9 +148,18 @@
                  (- (range-length r) count)
                  (range-indexer r))))
 
-(define (range-count pred r)
-  (assume (procedure? pred))
-  (range-fold (lambda (c x) (if (pred x) (+ c 1) c)) 0 r))
+(define range-count
+  (case-lambda
+    ((pred r)                           ; one-range fast path
+     (assume (procedure? pred))
+     (assume (range? r))
+     (%range-fold-1 (lambda (c x) (if (pred x) (+ c 1) c)) 0 r))
+    ((pred . rs)
+     (apply range-fold                  ; variadic path
+            (lambda (c . xs)
+              (if (apply pred xs) (+ c 1) c))
+            0
+            rs))))
 
 (define (range-any pred r)
   (assume (procedure? pred))
@@ -188,16 +197,19 @@
            (proc (%range-ref-no-check r i))
            (lp (+ i 1)))))))
 
+(define (%range-fold-1 proc nil r)
+  (let ((len (range-length r)))
+    (let lp ((i 0) (acc nil))
+      (if (= i len)
+          acc
+          (lp (+ i 1) (proc acc (%range-ref-no-check r i)))))))
+
 (define range-fold
   (case-lambda
     ((proc nil r)                       ; one-range fast path
      (assume (procedure? proc))
      (assume (range? r))
-     (let ((len (range-length r)))
-       (let lp ((i 0) (acc nil))
-         (if (= i len)
-             acc
-             (lp (+ i 1) (proc acc (%range-ref-no-check r i)))))))
+     (%range-fold-1 proc nil r))
     ((proc nil . rs)                    ; variadic path
      (assume (procedure? proc))
      (assume (pair? rs))
@@ -210,16 +222,19 @@
                                         (%range-ref-no-check* r i))
                                       rs)))))))))
 
+(define (%range-fold-right-1 proc nil r)
+  (let ((len (range-length r)))
+    (let rec ((i 0))
+      (if (= i len)
+          nil
+          (proc (rec (+ i 1)) (%range-ref-no-check r i))))))
+
 (define range-fold-right
   (case-lambda
     ((proc nil r)                       ; one-range fast path
      (assume (procedure? proc))
      (assume (range? r))
-     (let ((len (range-length r)))
-       (let rec ((i 0))
-         (if (= i len)
-             nil
-             (proc (rec (+ i 1)) (%range-ref-no-check r i))))))
+     (%range-fold-right-1 proc nil r))
     ((proc nil . rs)                    ; variadic path
      (assume (procedure? proc))
      (assume (pair? rs))
