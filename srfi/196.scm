@@ -161,6 +161,8 @@
              rs)))
 
 (define (range-any pred r . rs)
+  (assume (procedure? pred))
+  (assume (range? r))
   (if (null? rs)                        ; one-range fast path
       (%range-fold-1 (lambda (last x) (or (pred x) last)) #f r)
       (apply range-fold                 ; variadic path
@@ -170,6 +172,8 @@
              rs)))
 
 (define (range-every pred r . rs)
+  (assume (procedure? pred))
+  (assume (range? r))
   (call-with-current-continuation
    (lambda (return)
      (if (null? rs)                     ; one-range fast path
