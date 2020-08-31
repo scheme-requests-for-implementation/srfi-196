@@ -148,18 +148,17 @@
                  (- (range-length r) count)
                  (range-indexer r))))
 
-(define range-count
-  (case-lambda
-    ((pred r)                           ; one-range fast path
-     (assume (procedure? pred))
-     (assume (range? r))
-     (%range-fold-1 (lambda (c x) (if (pred x) (+ c 1) c)) 0 r))
-    ((pred . rs)
-     (apply range-fold                  ; variadic path
-            (lambda (c . xs)
-              (if (apply pred xs) (+ c 1) c))
-            0
-            rs))))
+(define (range-count pred r . rs)
+  (assume (procedure? pred))
+  (assume (range? r))
+  (if (null? rs)                        ; one-range fast path
+      (%range-fold-1 (lambda (c x) (if (pred x) (+ c 1) c)) 0 r)
+      (apply range-fold                 ; variadic path
+             (lambda (c . xs)
+               (if (apply pred xs) (+ c 1) c))
+             0
+             r
+             rs)))
 
 (define (range-any pred r . rs)
   (if (null? rs)                        ; one-range fast path
