@@ -161,15 +161,25 @@
             0
             rs))))
 
-(define (range-any pred r)
-  (assume (procedure? pred))
-  (range-fold (lambda (last x) (or (pred x) last)) #f r))
+(define (range-any pred r . rs)
+  (if (null? rs)                        ; one-range fast path
+      (%range-fold-1 (lambda (last x) (or (pred x) last)) #f r)
+      (apply range-fold                 ; variadic path
+             (lambda (last . xs) (or (apply pred xs) last))
+             #f
+             r
+             rs)))
 
-(define (range-every pred r)
-  (assume (procedure? pred))
+(define (range-every pred r . rs)
   (call-with-current-continuation
    (lambda (return)
-     (range-fold (lambda (_ x) (or (pred x) (return #f))) #t r))))
+     (if (null? rs)                     ; one-range fast path
+         (%range-fold-1 (lambda (_ x) (or (pred x) (return #f))) #t r)
+         (apply range-fold
+                (lambda (_ . xs) (or (apply pred xs) (return #f)))
+                #t
+                r
+                rs)))))
 
 (define (range-map proc r)
   (vector->range (range-map->vector proc r)))
