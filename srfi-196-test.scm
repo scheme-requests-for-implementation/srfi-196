@@ -241,6 +241,15 @@
            v)
    => #t)
 
+  ;;; filter & remove
+
+  (check (range->list (range-filter always test-bool-range))
+   => (range->list test-bool-range))
+  (check (%range-empty? (range-filter never test-bool-range)) => #t)
+  (check (equal? (range->list (range-filter even? test-num-range))
+                 (filter even? test-num-seq))
+   => #t)
+
   (check (equal? (range-filter->list always test-bool-range)
                  (range->list test-bool-range))
    => #t)
@@ -250,6 +259,14 @@
   ;; (range-filter->list pred r) = (filter pred (range->list r))
   (check (equal? (range-filter->list even? test-num-range)
                  (filter even? test-num-seq))
+   => #t)
+
+  (check (range->list (range-remove never test-bool-range))
+   => (range->list test-bool-range))
+  (check (%range-empty? (range-remove always test-bool-range))
+   => #t)
+  (check (equal? (range->list (range-remove even? test-num-range))
+                 (remove even? test-num-seq))
    => #t)
 
   (check (equal? (range-remove->list never test-bool-range)

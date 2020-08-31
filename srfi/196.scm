@@ -203,6 +203,9 @@
           nil
           (proc (%range-ref-no-check r i) (rec (+ i 1)))))))
 
+(define (range-filter pred r)
+  (vector->range (range-filter->vector pred r)))
+
 (define (range-filter->list pred r)
   (assume (procedure? pred))
   (assume (range? r))
@@ -213,6 +216,9 @@
 
 (define (range-filter->vector pred r)
   (list->vector (range-filter->list pred r)))
+
+(define (range-remove pred r)
+  (vector->range (range-remove->vector pred r)))
 
 (define (range-remove->list pred r)
   (assume (procedure? pred))

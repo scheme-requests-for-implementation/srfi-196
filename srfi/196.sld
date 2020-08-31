@@ -31,6 +31,7 @@
           range-any range-every
           range-filter->list range-remove->list range-reverse
           range-map range-map->vector range-filter->vector range-remove->vector
+          range-filter range-remove
           range-index range-index-right range-take-while range-drop-while
           range-take-while-right range-drop-while-right
           vector->range
