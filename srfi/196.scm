@@ -219,8 +219,6 @@
 (define range-fold
   (case-lambda
     ((proc nil r)                       ; one-range fast path
-     (assume (procedure? proc))
-     (assume (range? r))
      (%range-fold-1 proc nil r))
     ((proc nil . rs)                    ; variadic path
      (assume (procedure? proc))
@@ -246,8 +244,6 @@
 (define range-fold-right
   (case-lambda
     ((proc nil r)                       ; one-range fast path
-     (assume (procedure? proc))
-     (assume (range? r))
      (%range-fold-right-1 proc nil r))
     ((proc nil . rs)                    ; variadic path
      (assume (procedure? proc))
