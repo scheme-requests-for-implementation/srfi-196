@@ -339,6 +339,13 @@
              (lambda (n)
                ((range-indexer r) (- (range-length r) 1 n)))))
 
+(define (range-append . rs)
+  (assume (> (length rs) 1))
+  (vector->range
+   (list->vector
+    (concatenate
+     (map range->list rs)))))
+
 ;;;; Searching
 
 (define (range-index pred r . rs)

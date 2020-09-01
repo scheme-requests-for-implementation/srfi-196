@@ -1,7 +1,7 @@
 (define-library (srfi 196)
   (import (scheme base)
           (scheme case-lambda)
-          (only (srfi 1) reduce xcons every))
+          (only (srfi 1) reduce xcons every concatenate))
 
   (cond-expand
     ((library (srfi 133))
@@ -31,6 +31,7 @@
           range-count range-map->list range-for-each range-fold range-fold-right
           range-any range-every
           range-filter->list range-remove->list range-reverse
+          range-append
           range-map range-map->vector range-filter->vector range-remove->vector
           range-filter range-remove
           range-index range-index-right range-take-while range-drop-while
