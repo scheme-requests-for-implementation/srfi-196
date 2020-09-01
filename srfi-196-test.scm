@@ -252,22 +252,49 @@
   (check (range-count always test-num-range) => (range-length test-num-range))
   (check (range-count never test-num-range)  => 0)
   (check (range-count even? test-num-range)  => (count even? test-num-seq))
+  (check (range-count (lambda (x y) y) test-num-range test-bool-range)
+   => 1)
+  (check (range-count (lambda (x y) (zero? (+ x y)))
+                      test-num-range
+                      (range-map - test-num-range))
+   => (range-length test-num-range))
 
   (check (range-any even? test-num-range) => #t)
   (check (range-any never test-num-range) => #f)
+  (check (range-any (lambda (x y) y) test-num-range test-bool-range)
+   => #t)
+  (check (range-any (lambda (x y) (zero? (+ x y)))
+                    test-num-range
+                    test-num-range)
+   => #f)
 
   (check (range-every number? test-num-range) => #t)
   (check (range-every even? test-num-range)   => #f)
+  (check (range-every (lambda (x y) y) test-num-range test-bool-range)
+   => #f)
+  (check (range-every (lambda (x y) (zero? (+ x y)))
+                      test-num-range
+                      (range-map - test-num-range))
+   => #t)
 
   ;; (range-map->list f r) = (map f (range->list r))
   (check (equal? (range-map->list not test-bool-range)
                  (map not (range->list test-bool-range)))
+   => #t)
+  (check (equal? (range-map->list + test-num-range test-num-range)
+                 (map + test-num-seq test-num-seq))
    => #t)
 
   (check (let ((v #f))
            (range-for-each (lambda (x) (set! v x)) test-bool-range)
            v)
    => #t)
+  (check (let ((v #f))
+           (range-for-each (lambda (x y) (when y (set! v x)))
+                           test-num-range
+                           test-bool-range)
+           v)
+   => 11)
 
   ;;; filter & remove
 
@@ -318,6 +345,20 @@
                  (fold + 0 test-num-seq))
    => #t)
 
+  (check (= (range-fold + 0 test-num-range test-num-range)
+            (fold + 0 test-num-seq test-num-seq))
+   => #t)
+
+  ;; range-fold over ranges with unequal lengths terminates when
+  ;; the shortest range is exhausted.
+  (check (= (range-fold (lambda (s x _) (+ s x))
+                        0
+                        test-num-range
+                        test-bool-range)
+            (range-fold + 0 (range-take test-num-range
+                                        (range-length test-bool-range))))
+   => #t)
+
   ;; (range-fold-right (lambda (b) (+ 1 b)) 0 r) = (range-length r)
   (check (= (range-fold-right (lambda (b _) (+ b 1)) 0 test-num-range)
             (range-length test-num-range))
@@ -326,6 +367,21 @@
   ;; (range-fold-right r proc nil) = (fold-right proc nil (range->list r))
   (check (equal? (range-fold-right + 0 test-num-range)
                  (fold-right + 0 test-num-seq))
+   => #t)
+
+  (check (= (range-fold-right + 0 test-num-range test-num-range)
+            (fold-right + 0 test-num-seq test-num-seq))
+   => #t)
+
+  ;; range-fold-right over ranges with unequal lengths terminates when
+  ;; the shortest range is exhausted.
+  (check (= (range-fold-right (lambda (s x _) (+ s x))
+                              0
+                              test-num-range
+                              test-bool-range)
+            (range-fold-right + 0 (range-take test-num-range
+                                              (range-length
+                                               test-bool-range))))
    => #t)
 
   (check (eqv? (range-first (range-reverse test-bool-range))
@@ -362,12 +418,20 @@
   (check (range-index always test-num-range) => 0)
   (check (range-index never test-num-range)  => #f)
   (check (range-index values test-bool-range) => 1)
+  (check (range-index (lambda (x y) (and (odd? x) y))
+                      test-num-range
+                      test-bool-range)
+   => 1)
 
   (check (eqv? (range-index-right always test-num-range)
                (- (range-length test-num-range) 1))
    => #t)
   (check (range-index-right never test-num-range)  => #f)
   (check (range-index-right values test-bool-range) => 1)
+  (check (range-index-right (lambda (x y) (< (+ x y) 30))
+                            test-num-range
+                            test-num-range)
+   => 4)
 
   ;; range-index and range-index-right produce the same index if pred
   ;; is only satisfied by the element at that index.
