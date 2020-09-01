@@ -339,12 +339,27 @@
              (lambda (n)
                ((range-indexer r) (- (range-length r) 1 n)))))
 
-(define (range-append . rs)
-  (assume (> (length rs) 1))
-  (vector->range
-   (list->vector
-    (concatenate
-     (map range->list rs)))))
+(define range-append
+  (case-lambda
+    (() (raw-range 0 0 #f))
+    ((r) r)                             ; one-range fast path
+    ((ra rb)                            ; two-range fast path
+     (let ((la (range-length ra))
+           (lb (range-length rb)))
+       (raw-range 0
+                  (+ la lb)
+                  (lambda (i)
+                    (if (< i la)
+                        (%range-ref-no-check ra i)
+                        (%range-ref-no-check rb (- i la)))))))
+    (rs                                 ; variadic path
+     (let ((lens (map range-length rs)))
+       (range (reduce + 0 lens)
+              (lambda (i)
+                (let lp ((i i) (rs rs) (lens lens))
+                  (if (< i (car lens))
+                      (%range-ref-no-check (car rs) i)
+                      (lp (- i (car lens)) (cdr rs) (cdr lens))))))))))
 
 ;;;; Searching
 

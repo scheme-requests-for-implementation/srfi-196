@@ -311,6 +311,19 @@
   (check (equal? (range->list (range-reverse test-num-range))
                  (reverse test-num-seq))
    => #t)
+
+  (check (%range-empty? (range-append)) => #t)
+  (check (range->list (range-append test-bool-range)) => '(#f #t))
+  (check (equal? (range->list (range-append (numeric-range 10 20)
+                                            (numeric-range 20 30)))
+                 test-num-seq)
+   => #t)
+  (check (equal? (range->list (range-append (numeric-range 10 15)
+                                            (numeric-range 15 20)
+                                            (numeric-range 20 25)
+                                            (numeric-range 25 30)))
+                 test-num-seq)
+   => #t)
 )
 
 ;;;; Searching
@@ -416,4 +429,4 @@
   (newline)
   (check-report))
 
-(check-all)
+;(check-all)
