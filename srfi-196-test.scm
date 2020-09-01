@@ -87,6 +87,9 @@
 (define always (constantly #t))
 (define never (constantly #f))
 
+(define (range=/eqv? ra rb)
+  (range=? eqv? ra rb))
+
 (define (%range-empty? r) (zero? (range-length r)))
 
 ;;;; Test ranges
@@ -102,8 +105,6 @@
   (range 2 (lambda (n) (not (zero? n)))))
 
 ;;;; Conversion
-
-;;;; Test these first, as range->list is used extensively in later tests.
 
 (define (check-conversion)
   (print-header "Running conversion tests...")
@@ -193,28 +194,25 @@
   ;; Joining the two ranges returned by range-split-at gives the
   ;; original range.
   (check (let-values (((ra rb) (range-split-at test-bool-range 1)))
-           (append (range->list ra) (range->list rb)))
-   => (range->list test-bool-range))
+           (range=/eqv? (range-append ra rb) test-bool-range))
+   => #t)
 
-  (check (range->list
-          (subrange test-bool-range 0 (range-length test-bool-range)))
-   => (range->list test-bool-range))
+  (check (range=/eqv?
+          (subrange test-bool-range 0 (range-length test-bool-range))
+          test-bool-range)
+   => #t)
   (let ((a 5) (b 10))
     (check (= (range-length (subrange test-num-range a b)) (- b a))
      => #t)
-    (check (equal?
-            (range->list (subrange test-num-range a b))
-            (range->list
-             (range-take (range-drop test-num-range a) (- b a))))
+    (check (range=/eqv? (subrange test-num-range a b)
+                        (range-take (range-drop test-num-range a) (- b a)))
      => #t)
-    (check (equal?
-            (range->list (subrange test-num-range 0 b))
-            (range->list (range-take test-num-range b)))
+    (check (range=/eqv? (subrange test-num-range 0 b)
+                        (range-take test-num-range b))
      => #t)
-    (check (equal?
-            (range->list
-             (subrange test-num-range a (range-length test-num-range)))
-            (range->list (range-drop test-num-range a)))
+    (check (range=/eqv?
+            (subrange test-num-range a (range-length test-num-range))
+            (range-drop test-num-range a))
      => #t))
 
   ;; range-take r n returns a range of length n.
@@ -239,7 +237,8 @@
   (check (range-length
           (range-drop test-num-range (range-length test-num-range)))
    => 0)
-  (check (range->list (range-drop test-num-range 15)) => (drop test-num-seq 15))
+  (check (range->list (range-drop test-num-range 15))
+   => (drop test-num-seq 15))
 
   ;; range-drop-right r n returns a range of length (range-length r) - n.
   (check (range-length (range-drop-right test-num-range 10))
@@ -272,16 +271,15 @@
 
   ;;; filter & remove
 
-  (check (range->list (range-filter always test-bool-range))
-   => (range->list test-bool-range))
+  (check (range=/eqv? (range-filter always test-bool-range)
+                      test-bool-range)
+   => #t)
   (check (%range-empty? (range-filter never test-bool-range)) => #t)
   (check (equal? (range->list (range-filter even? test-num-range))
                  (filter even? test-num-seq))
    => #t)
 
-  (check (equal? (range-filter->list always test-bool-range)
-                 (range->list test-bool-range))
-   => #t)
+  (check (range-filter->list always test-bool-range) => '(#f #t))
 
   (check (null? (range-filter->list never test-bool-range)) => #t)
 
@@ -290,8 +288,9 @@
                  (filter even? test-num-seq))
    => #t)
 
-  (check (range->list (range-remove never test-bool-range))
-   => (range->list test-bool-range))
+  (check (range=/eqv? (range-remove never test-bool-range)
+                      test-bool-range)
+   => #t)
   (check (%range-empty? (range-remove always test-bool-range))
    => #t)
   (check (equal? (range->list (range-remove even? test-num-range))
@@ -343,15 +342,15 @@
 
   (check (%range-empty? (range-append)) => #t)
   (check (range->list (range-append test-bool-range)) => '(#f #t))
-  (check (equal? (range->list (range-append (numeric-range 10 20)
-                                            (numeric-range 20 30)))
-                 test-num-seq)
+  (check (range=/eqv? (range-append (numeric-range 10 20)
+                                    (numeric-range 20 30))
+                      test-num-range)
    => #t)
-  (check (equal? (range->list (range-append (numeric-range 10 15)
-                                            (numeric-range 15 20)
-                                            (numeric-range 20 25)
-                                            (numeric-range 25 30)))
-                 test-num-seq)
+  (check (range=/eqv? (range-append (numeric-range 10 15)
+                                    (numeric-range 15 20)
+                                    (numeric-range 20 25)
+                                    (numeric-range 25 30))
+                      test-num-range)
    => #t)
 )
 
@@ -379,8 +378,8 @@
      => #t))
 
   ;; (range-take-while always r) = r
-  (check (equal? (range->list (range-take-while always test-bool-range))
-                 (range->list test-bool-range))
+  (check (range=/eqv? (range-take-while always test-bool-range)
+                      test-bool-range)
    => #t)
 
   ;; (range-take-while never r) = [empty range]
@@ -394,27 +393,25 @@
   (check (%range-empty? (range-drop-while always test-bool-range)) => #t)
 
   ;; (range-drop-while never r) = r
-  (check (equal? (range->list (range-drop-while never test-bool-range))
-                 (range->list test-bool-range))
+  (check (range=/eqv? (range-drop-while never test-bool-range)
+                      test-bool-range)
    => #t)
 
   (let ((pred (lambda (n) (< n 15))))
     (check (range->list (range-drop-while pred test-num-range))
      => (drop-while pred test-num-seq)))
 
-  ;; Given a (non-existent) range-append function,
-  ;;
   ;; (range-append (range-take-while p r) (range-drop-while p r)) = r
   (let ((pred (lambda (n) (< n 10))))
-    (check (equal?
-            (append (range->list (range-take-while pred test-num-range))
-                    (range->list (range-drop-while pred test-num-range)))
-            test-num-seq)
+    (check (range=/eqv?
+            (range-append (range-take-while pred test-num-range)
+                          (range-drop-while pred test-num-range))
+            test-num-range)
      => #t))
 
   ;; (range-take-while-right always r) = r
-  (check (equal? (range->list (range-take-while-right always test-bool-range))
-                 (range->list test-bool-range))
+  (check (range=/eqv? (range-take-while-right always test-bool-range)
+                      test-bool-range)
    => #t)
 
   ;; (range-take-while-right never r) = [empty range]
@@ -428,27 +425,26 @@
   (check (%range-empty? (range-drop-while-right always test-bool-range)) => #t)
 
   ;; (range-drop-while-right never r) = r
-  (check (equal? (range->list (range-drop-while-right never test-bool-range))
-                 (range->list test-bool-range))
+  (check (range=/eqv? (range-drop-while-right never test-bool-range)
+                      test-bool-range)
    => #t)
 
   (let ((pred (lambda (n) (>= n 15))))
     (check (range->list (range-drop-while-right pred test-num-range))
      => (take test-num-seq 5)))
 
-  ;; Given a (non-existent) range-append function,
-  ;;
   ;; (range-append (range-drop-while-right p r)
   ;;               (range-take-while-right p r)) = r
   (let ((pred (lambda (n) (< n 10))))
-    (check (equal?
-            (append (range->list (range-drop-while-right pred test-num-range))
-                    (range->list (range-take-while-right pred test-num-range)))
-            test-num-seq)
+    (check (range=/eqv?
+            (range-append (range-drop-while-right pred test-num-range)
+                          (range-take-while-right pred test-num-range))
+            test-num-range)
      => #t))
 )
 
 (define (check-all)
+  (check-predicates)
   (check-conversion)
   (check-constructors)
   (check-accessors)
@@ -458,4 +454,4 @@
   (newline)
   (check-report))
 
-;(check-all)
+(check-all)
