@@ -34,6 +34,7 @@
           range-append
           range-map range-map->vector range-filter->vector range-remove->vector
           range-filter range-remove
+          range-filter-map range-filter-map->list range-filter-map->vector
           range-index range-index-right range-take-while range-drop-while
           range-take-while-right range-drop-while-right
           vector->range
