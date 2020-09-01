@@ -277,12 +277,69 @@
                       (range-map - test-num-range))
    => #t)
 
+  ;;; map, filter-map, & for-each
+
+  (check (range=/eqv? (range-map (lambda (x) (+ 1 x)) test-num-range)
+                      (numeric-range 11 31))
+   => #t)
+  (check (equal? (range->list (range-map square test-num-range))
+                 (map square test-num-seq))
+   => #t)
+  (check (range=/eqv? (range-map + test-num-range test-num-range)
+                      (numeric-range 20 60 2))
+   => #t)
+  ;; range-map over ranges with unequal lengths terminates when
+  ;; the shortest range is exhausted.
+  (check (range=/eqv?
+          (range-map (lambda (x _) x) test-num-range test-bool-range)
+          (range-take test-num-range (range-length test-bool-range)))
+   => #t)
+
   ;; (range-map->list f r) = (map f (range->list r))
   (check (equal? (range-map->list not test-bool-range)
                  (map not (range->list test-bool-range)))
    => #t)
   (check (equal? (range-map->list + test-num-range test-num-range)
                  (map + test-num-seq test-num-seq))
+   => #t)
+
+  ;; (range-map->vector f r) = (map f (range->vector r))
+  (check (equal? (range-map->vector not test-bool-range)
+                 (vector-map not (range->vector test-bool-range)))
+   => #t)
+  (let ((num-vec (list->vector test-num-seq)))
+    (check (equal? (range-map->vector + test-num-range test-num-range)
+                   (vector-map + num-vec num-vec))
+     => #t))
+
+  (check (%range-empty? (range-filter-map never test-bool-range)) => #t)
+  (check (range=/eqv? (range-filter-map values test-num-range)
+                      test-num-range)
+   => #t)
+  (check (equal?
+          (range->list (range-filter-map (lambda (x) (and (even? x) x))
+                                         test-num-range))
+          (filter-map (lambda (x) (and (even? x) x)) test-num-seq))
+   => #t)
+
+  (check (range-filter-map->list never test-bool-range) => '())
+  (check (equal? (range-filter-map->list values test-num-range)
+                 test-num-seq)
+   => #t)
+  (check (equal?
+          (range-filter-map->list (lambda (x) (and (even? x) x))
+                                  test-num-range)
+          (filter-map (lambda (x) (and (even? x) x)) test-num-seq))
+   => #t)
+
+  (check (range-filter-map->vector never test-bool-range) => #())
+  (check (equal? (range-filter-map->vector values test-num-range)
+                 (range->vector test-num-range))
+   => #t)
+  (check (equal?
+          (range-filter-map->vector (lambda (x) (and (even? x) x))
+                                  test-num-range)
+          (range->vector (numeric-range 10 30 2)))
    => #t)
 
   (check (let ((v #f))
