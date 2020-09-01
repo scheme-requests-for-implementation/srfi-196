@@ -354,12 +354,13 @@
                         (%range-ref-no-check rb (- i la)))))))
     (rs                                 ; variadic path
      (let ((lens (map range-length rs)))
-       (range (reduce + 0 lens)
-              (lambda (i)
-                (let lp ((i i) (rs rs) (lens lens))
-                  (if (< i (car lens))
-                      (%range-ref-no-check (car rs) i)
-                      (lp (- i (car lens)) (cdr rs) (cdr lens))))))))))
+       (raw-range 0
+                  (reduce + 0 lens)
+                  (lambda (i)
+                    (let lp ((i i) (rs rs) (lens lens))
+                      (if (< i (car lens))
+                          (%range-ref-no-check (car rs) i)
+                          (lp (- i (car lens)) (cdr rs) (cdr lens))))))))))
 
 ;;;; Searching
 
