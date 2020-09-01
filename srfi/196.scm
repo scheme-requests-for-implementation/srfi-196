@@ -316,22 +316,44 @@
 
 ;;;; Searching
 
-(define (range-index pred r)
+(define (range-index pred r . rs)
   (assume (procedure? pred))
   (assume (range? r))
-  (let ((len (range-length r)))
-    (let lp ((i 0))
-      (cond ((>= i len) #f)
-            ((pred (%range-ref-no-check r i)) i)
-            (else (lp (+ i 1)))))))
+  (if (null? rs)                        ; one-range fast path
+      (let ((len (range-length r)))
+        (let lp ((i 0))
+          (cond ((= i len) #f)
+                ((pred (%range-ref-no-check r i)) i)
+                (else (lp (+ i 1))))))
+      (let* ((rs* (cons r rs))          ; variadic path
+             (len (minimum (map range-length rs*))))
+        (let lp ((i 0))
+          (cond ((= i len) #f)
+                ((apply pred
+                        (map (lambda (s) (%range-ref-no-check s i))
+                             rs*))
+                 i)
+                (else (lp (+ i 1))))))))
 
-(define (range-index-right pred r)
+(define (range-index-right pred r . rs)
   (assume (procedure? pred))
   (assume (range? r))
-  (let lp ((i (- (range-length r) 1)))
-    (cond ((< i 0) #f)
-          ((pred (%range-ref-no-check r i)) i)
-          (else (lp (- i 1))))))
+  (if (null? rs)                        ; one-range fast path
+      (let lp ((i (- (range-length r) 1)))
+        (cond ((< i 0) #f)
+              ((pred (%range-ref-no-check r i)) i)
+              (else (lp (- i 1)))))
+      (let ((len (range-length r))      ; variadic path
+            (rs* (cons r rs)))
+        (assume (every (lambda (s) (= len (range-length s))) rs)
+                "range-index-right: ranges must be of the same length")
+        (let lp ((i (- len 1)))
+          (cond ((< i 0) #f)
+                ((apply pred
+                        (map (lambda (s) (%range-ref-no-check s i))
+                             rs*))
+                 i)
+                (else (lp (- i 1))))))))
 
 (define (range-take-while pred r)
   (let ((count (range-index (lambda (x) (not (pred x))) r)))
