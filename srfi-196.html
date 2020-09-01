@@ -170,7 +170,7 @@ This procedure must run in O(1) time.</p>
 <p>Returns the <em>n</em>th element of <em>range</em>. It is an error if
 <em>n</em> is less than 0 or greater than or equal to the length of
 <em>range</em>.
-This procedure must run in O(<em>n</em>) time.</p>
+This procedure must run in O(1) time.</p>
 
 <p><code>(range-first</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Equivalent to <code>(range-ref</code>&nbsp;<em>range</em>
@@ -297,6 +297,7 @@ These procedures must run in O(<em>n</em>) time.</p>
 <p><code>(range-&gt;list</code>&nbsp;<em>range</em><code>)</code><br/>
 <code>(range-&gt;vector</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns a list/vector containing the elements of <em>range</em> in order.
+It is an error to modify the result.
 These procedures must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-&gt;generator</code>&nbsp;<em>range</em><code>)</code></p>
