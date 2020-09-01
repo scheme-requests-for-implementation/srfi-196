@@ -97,15 +97,19 @@ The geometric sequence 1, 1/2, 1/4, &hellip;, 1/512 can be expressed by
 
 <h2>Specification</h2>
 
-<p>Ranges belong to a disjoint type.
-The size of a range object is independent of the
-number of elements it contains,
-except for ranges returned by certain procedures
-noted below.
-Statements about running time exclude time spent in
-the indexer procedure.
+<p>Ranges belong to a disjoint type.</p>
+
+<p> The size of a range object is independent of the number of
+elements it contains, except for <em>vector-style ranges</em>.
+These are returned only by certain procedures noted below.  Such
+ranges cannot compute their results on the fly, and so must compute
+them in advance and store them in a vector or similar O(1) random
+access data structure.  As a result, their size is proportional to
+the number of elements; however, performance guarantees are maintained.
 </p>
 
+<p>Statements about running time exclude time spent in the indexer procedure.
+</p>
 <p>This SRFI recommends, but does not require, that Scheme implementations
 which also provide <a href="https://srfi.schemers.org/srfi-42/srfi-42.html">SRFI 42</a>
 modify it so that the typed generator <code>:range</code> also accepts
@@ -147,11 +151,18 @@ a range over inexact numbers are enumerated by multiplying the index
 by the step value rather than by adding the step value to itself
 repeatedly.  This reduces the likelihood of roundoff errors.</p>
 
-<p><code>(vector->range</code>&nbsp;<em>vector</em><code>)</code></p>
+<p><code>(vector-&gt;range</code>&nbsp;<em>vector</em><code>)</code></p>
 <p>Returns a range whose elements are those of <em>vector</em>.
 The size of the result is fixed once the size of <em>vector</em>
 has been excluded.  It is an error to mutate <em>vector</em>.</p>
+<p><code>(vector->range</code>&nbsp;<em>vector</em><code>)</code></p>
+<p>Returns a range which contains all the elements of the <em>ranges</em>.
 
+<p><code>(range-append</code>&nbsp;<em>vector</em> ...<code>)</code></p>
+<p>Returns a range whose elements are the elements of the <em>ranges</em>
+in order.
+It may return a vector-style range.
+-
 
 <h3 id="predicates">Predicates</h3>
 
@@ -233,12 +244,9 @@ This procedure must run in O(<em>n</em>) time.</p>
 <p>Returns a range/list/vector of the results of applying <em>proc</em> to each
 element of <em>range</em> in order. However, the order in which
 <em>proc</em> is actually applied to the elements is unspecified.
-These procedures must run in O(<em>n</em>) time.</p>
-
-<p>The <code>range-map</code>
-procedure eagerly computes its results and returns specialized
-ranges that store arbitrary elements.  As a result, their size is
-proportional to the number of elements in <em>range</em>.</p>.
+The <code>range-map</code> procedure may return a vector-style range.
+These procedures must run in O(<em>n</em>) time.
+</p>
 
 <p><code>(range-for-each</code>&nbsp;<em>proc range</em><code>)</code></p>
 <p>Applies <em>proc</em> to each element of <em>range</em> in order. Returns an
@@ -253,6 +261,8 @@ This procedure must run in O(<em>n</em>) time.</p>
 <code>(range-remove-&gt;vector</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range/list/vector containing the elements of <em>range</em> that satisfy / do
 not satisfy <em>pred</em>.
+The <code>range-filter</code> and <code>range-remove</code>
+procedures may return a vector-style range.
 These procedures must run in O(<em>n</em>) time.</p>
 
 <p>The <code>range-filter</code> and <code>range-remove</code>
