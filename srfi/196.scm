@@ -188,12 +188,32 @@
   (assume (pair? rs))
   (vector->range (apply range-map->vector proc rs)))
 
+(define (range-filter-map proc . rs)
+  (assume (pair? rs))
+  (vector->range (apply range-filter-map->vector proc rs)))
+
 (define (range-map->list proc r . rs)
   (assume (procedure? proc))
   (if (null? rs)                        ; one-range fast path
       (%range-fold-right-1 (lambda (res x) (cons (proc x) res)) '() r)
       (apply range-fold-right           ; variadic path
              (lambda (res . xs) (cons (apply proc xs) res))
+             '()
+             r
+             rs)))
+
+(define (range-filter-map->list proc r . rs)
+  (if (null? rs)                        ; one-range fast path
+      (%range-fold-right-1 (lambda (res x)
+                             (cond ((proc x) =>
+                                    (lambda (elt) (cons elt res)))
+                                   (else res)))
+                           '()
+                           r)
+      (apply range-fold-right           ; variadic path
+             (lambda (res . xs)
+               (cond ((apply proc xs) => (lambda (elt) (cons elt res)))
+                     (else res)))
              '()
              r
              rs)))
@@ -210,6 +230,11 @@
                                             (%range-ref-no-check r i))
                                           rs*)))
                        (minimum (map range-length rs*))))))
+
+(define (range-filter-map->vector proc r . rs)
+  (list->vector (if (null? rs)
+                    (range-filter-map->list proc r)
+                    (apply range-filter-map->list proc r rs))))
 
 (define (range-for-each proc r . rs)
   (assume (procedure? proc))
