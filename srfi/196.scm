@@ -209,18 +209,26 @@
                          (apply proc (map (lambda (r)
                                             (%range-ref-no-check r i))
                                           rs*)))
-                       (reduce max 0 (map range-length rs*))))))
+                       (minimum (map range-length rs*))))))
 
-(define (range-for-each proc r)
+(define (range-for-each proc r . rs)
   (assume (procedure? proc))
   (assume (range? r))
-  (let ((len (range-length r)))
-    (let lp ((i 0))
-      (if (>= i len)
-          (if #f #f)
-          (begin
-           (proc (%range-ref-no-check r i))
-           (lp (+ i 1)))))))
+  (if (null? rs)                        ; one-range fast path
+      (let ((len (range-length r)))
+        (let lp ((i 0))
+          (cond ((= i len) (if #f #f))
+                (else (proc (%range-ref-no-check r i))
+                      (lp (+ i 1))))))
+      (let* ((rs* (cons r rs))          ; variadic path
+             (len (minimum (map range-length rs*))))
+        (let lp ((i 0))
+          (cond ((= i len) (if #f #f))
+                (else
+                 (apply proc (map (lambda (r)
+                                    (%range-ref-no-check r i))
+                                  rs*))
+                 (lp (+ i 1))))))))
 
 (define (%range-fold-1 proc nil r)
   (assume (procedure? proc))
