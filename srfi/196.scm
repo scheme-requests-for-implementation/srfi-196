@@ -178,26 +178,38 @@
    (lambda (return)
      (if (null? rs)                     ; one-range fast path
          (%range-fold-1 (lambda (_ x) (or (pred x) (return #f))) #t r)
-         (apply range-fold
+         (apply range-fold              ; variadic path
                 (lambda (_ . xs) (or (apply pred xs) (return #f)))
                 #t
                 r
                 rs)))))
 
-(define (range-map proc r)
-  (vector->range (range-map->vector proc r)))
+(define (range-map proc . rs)
+  (assume (pair? rs))
+  (vector->range (apply range-map->vector proc rs)))
 
-(define (range-map->list proc r)
+(define (range-map->list proc r . rs)
   (assume (procedure? proc))
-  (range-fold-right (lambda (xs elem) (cons (proc elem) xs))
-                    '()
-                    r))
+  (if (null? rs)                        ; one-range fast path
+      (%range-fold-right-1 (lambda (res x) (cons (proc x) res)) '() r)
+      (apply range-fold-right           ; variadic path
+             (lambda (res . xs) (cons (apply proc xs) res))
+             '()
+             r
+             rs)))
 
-(define (range-map->vector proc r)
+(define (range-map->vector proc r . rs)
   (assume (procedure? proc))
   (assume (range? r))
-  (vector-unfold (lambda (i) (proc (%range-ref-no-check r i)))
-		 (range-length r)))
+  (if (null? rs)                        ; one-range fast path
+      (vector-unfold (lambda (i) (proc (%range-ref-no-check r i)))
+		     (range-length r))
+      (let ((rs* (cons r rs)))          ; variadic path
+        (vector-unfold (lambda (i)
+                         (apply proc (map (lambda (r)
+                                            (%range-ref-no-check r i))
+                                          rs*)))
+                       (reduce max 0 (map range-length rs*))))))
 
 (define (range-for-each proc r)
   (assume (procedure? proc))
