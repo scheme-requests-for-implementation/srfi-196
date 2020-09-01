@@ -24,6 +24,7 @@
 
   (export range numeric-range
           range?
+          range=?
           range-length range-ref
           range-first range-last
           subrange

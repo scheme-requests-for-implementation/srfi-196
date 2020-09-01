@@ -141,6 +141,20 @@
   (check (range->list (numeric-range -1 -3 -0.6)) => (iota 4 -1 -0.6))
 )
 
+;;;; Predicates
+
+(define (check-predicates)
+  (print-header "Running predicate tests...")
+
+  (check (range=? eqv? (numeric-range 0 0) (numeric-range 5 5))  => #t)
+  (check (range=? eqv? (numeric-range 0 0) test-num-range)       => #f)
+  (check (range=? eqv? test-num-range test-num-range)            => #t)
+  (check (range=? eqv? test-num-range (numeric-range 10 30))     => #t)
+  (check (range=? eqv? test-num-range (numeric-range 10 20))     => #f)
+  (check (range=? eqv? test-bool-range (vector->range #(#f #t))) => #t)
+  (check (range=? eqv? test-bool-range (vector->range #(#t #f))) => #f)
+)
+
 ;;;; Accessors
 
 (define (check-accessors)

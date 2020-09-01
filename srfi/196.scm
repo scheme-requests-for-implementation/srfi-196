@@ -89,6 +89,35 @@
 
 (define (range-last r) (%range-ref-no-check r (- (range-length r) 1)))
 
+;;;; Predicates
+
+(define range=?
+  (case-lambda
+    ((equal ra rb)                      ; two-range fast path
+     (assume (procedure? equal))
+     (assume (range? ra))
+     (%range=?-2 equal ra rb))
+    ((equal . rs)                       ; variadic path
+     (assume (procedure? equal))
+     (assume (pair? rs))
+     (let ((ra (car rs)))
+       (assume (range? ra))
+       (every (lambda (rb) (%range=?-2 equal ra rb)) (cdr rs))))))
+
+(define (%range=?-2 equal ra rb)
+  (assume (range? rb))
+  (or (eqv? ra rb)                      ; quick check
+      (let ((la (range-length ra)))
+        (and (= la (range-length rb))
+             (if (zero? la)
+                 #t                     ; all empty ranges are equal
+                 (let lp ((i 0))
+                   (cond ((= i la) #t)
+                         ((not (equal (%range-ref-no-check ra i)
+                                      (%range-ref-no-check rb i)))
+                          #f)
+                         (else (lp (+ i 1))))))))))
+
 ;;;; Iteration
 
 (define (range-split-at r index)
