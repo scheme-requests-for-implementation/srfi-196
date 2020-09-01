@@ -153,6 +153,21 @@
   (check (range=? eqv? test-num-range (numeric-range 10 20))     => #f)
   (check (range=? eqv? test-bool-range (vector->range #(#f #t))) => #t)
   (check (range=? eqv? test-bool-range (vector->range #(#t #f))) => #f)
+  (check (range=? eqv?
+                  test-num-range
+                  (numeric-range 10 30)
+                  (subrange (numeric-range 0 50) 10 30))
+   => #t)
+  (check (range=? eqv?
+                  test-bool-range
+                  (numeric-range 10 30)
+                  (subrange (numeric-range 0 50) 10 30))
+   => #f)
+  (check (range=? eqv?
+                  test-num-range
+                  (numeric-range 11 31)
+                  (subrange (numeric-range 0 50) 10 30))
+   => #f)
 )
 
 ;;;; Accessors
