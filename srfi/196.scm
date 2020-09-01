@@ -82,9 +82,6 @@
     ((_ r index)
      ((range-indexer r) (+ index (range-start-index r))))))
 
-(define (%range-ref-no-check* r index)
-  ((range-indexer r) (+ index (range-start-index r))))
-
 (define (range-first r) (%range-ref-no-check r (range-start-index r)))
 
 (define (range-last r) (%range-ref-no-check r (- (range-length r) 1)))
@@ -244,7 +241,7 @@
              acc
              (lp (+ i 1)
                  (apply proc acc (map (lambda (r)
-                                        (%range-ref-no-check* r i))
+                                        (%range-ref-no-check r i))
                                       rs)))))))))
 
 (define (%range-fold-right-1 proc nil r)
@@ -267,8 +264,9 @@
        (let rec ((i 0))
          (if (= i len)
              nil
-             (proc (rec (+ i 1))
-                   (map (lambda (r) (%range-ref-no-check* r i)) rs))))))))
+             (apply proc
+                    (rec (+ i 1))
+                    (map (lambda (r) (%range-ref-no-check r i)) rs))))))))
 
 (define (range-filter pred r)
   (vector->range (range-filter->vector pred r)))
