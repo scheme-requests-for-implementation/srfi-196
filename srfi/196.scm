@@ -22,6 +22,9 @@
 (define (exact-natural? x)
   (and (exact-integer? x) (not (negative? x))))
 
+;; Find the least element of a list of naturals.
+(define (minimum ns) (reduce min 0 ns))
+
 (define-record-type <range>
   (raw-range start-index length indexer)
   range?
@@ -235,7 +238,7 @@
     ((proc nil . rs)                    ; variadic path
      (assume (procedure? proc))
      (assume (pair? rs))
-     (let ((len (reduce max 0 (map range-length rs))))
+     (let ((len (minimum (map range-length rs))))
        (let lp ((i 0) (acc nil))
          (if (= i len)
              acc
@@ -260,7 +263,7 @@
     ((proc nil . rs)                    ; variadic path
      (assume (procedure? proc))
      (assume (pair? rs))
-     (let ((len (reduce max 0 (map range-length rs))))
+     (let ((len (minimum (map range-length rs))))
        (let rec ((i 0))
          (if (= i len)
              nil
