@@ -75,6 +75,16 @@
   (assume (vector? vec))
   (raw-range 0 (vector-length vec) (lambda (i) (vector-ref vec i))))
 
+;; This implementation assumes that string-ref is O(n), as would be
+;; the case with UTF-8.  If an implementation has an O(1) string-ref,
+;; the following version is preferable:
+;;
+;; (raw-range 0 (string-length s) (lambda (i) (string-ref s i))))
+;;
+(define (string-range s)
+  (assume (string? s))
+  (vector-range (string->vector s)))
+
 ;;;; Accessors
 
 (define (range-ref r index)

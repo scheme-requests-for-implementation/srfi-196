@@ -149,6 +149,12 @@
     (check (range-first (vector-range vec))   => (vector-ref vec 0))
     (check (range-last (vector-range vec))    => (vector-ref vec 4))
     (check (range->vector (vector-range vec)) => vec))
+
+  (let* ((s "0123456789") (srange (string-range s)))
+    (check (range-length srange) => (string-length s))
+    (check (range-first srange)  => (string-ref s 0))
+    (check (range-last srange)   => (string-ref s 9))
+    (check (range->list srange)  => (string->list s)))
 )
 
 ;;;; Predicates

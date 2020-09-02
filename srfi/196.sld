@@ -24,6 +24,7 @@
 
   (export range numeric-range
           vector-range
+          string-range
           range?
           range=?
           range-length range-ref
