@@ -219,7 +219,7 @@
 
 (define (range-filter-map proc . rs)
   (assume (pair? rs))
-  (vector->range (apply range-filter-map->vector proc rs)))
+  (vector->range (list->vector (apply range-filter-map->list proc rs))))
 
 (define (range-map->list proc r . rs)
   (assume (procedure? proc))
@@ -259,11 +259,6 @@
                                             (%range-ref-no-check r i))
                                           rs*)))
                        (minimum (map range-length rs*))))))
-
-(define (range-filter-map->vector proc r . rs)
-  (list->vector (if (null? rs)
-                    (range-filter-map->list proc r)
-                    (apply range-filter-map->list proc r rs))))
 
 (define (range-for-each proc r . rs)
   (assume (procedure? proc))

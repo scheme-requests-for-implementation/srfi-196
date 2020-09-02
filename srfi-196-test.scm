@@ -332,16 +332,6 @@
           (filter-map (lambda (x) (and (even? x) x)) test-num-seq))
    => #t)
 
-  (check (range-filter-map->vector never test-bool-range) => #())
-  (check (equal? (range-filter-map->vector values test-num-range)
-                 (range->vector test-num-range))
-   => #t)
-  (check (equal?
-          (range-filter-map->vector (lambda (x) (and (even? x) x))
-                                  test-num-range)
-          (range->vector (numeric-range 10 30 2)))
-   => #t)
-
   (check (let ((v #f))
            (range-for-each (lambda (x) (set! v x)) test-bool-range)
            v)
