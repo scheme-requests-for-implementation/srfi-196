@@ -283,11 +283,9 @@ These procedures must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-filter</code>&nbsp;<em>pred range</em><code>)</code><br/>
 <code>(range-filter-&gt;list</code>&nbsp;<em>pred range</em><code>)</code><br/>
-<code>(range-filter-&gt;vector</code>&nbsp;<em>pred range</em><code>)</code><br/>
 <code>(range-remove</code>&nbsp;<em>pred range</em><code>)</code><br/>
 <code>(range-remove-&gt;list</code>&nbsp;<em>pred range</em><code>)</code><br/>
-<code>(range-remove-&gt;vector</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns a range/list/vector containing the elements of <em>range</em> that satisfy / do
+<p>Returns a range/list containing the elements of <em>range</em> that satisfy / do
 not satisfy <em>pred</em>.
 The <code>range-filter</code> and <code>range-remove</code>
 procedures may return a vector-style range.

@@ -329,7 +329,7 @@
                     (map (lambda (r) (%range-ref-no-check r i)) rs))))))))
 
 (define (range-filter pred r)
-  (vector->range (range-filter->vector pred r)))
+  (vector->range (list->vector (range-filter->list pred r))))
 
 (define (range-filter->list pred r)
   (assume (procedure? pred))
@@ -339,11 +339,8 @@
                     '()
                     r))
 
-(define (range-filter->vector pred r)
-  (list->vector (range-filter->list pred r)))
-
 (define (range-remove pred r)
-  (vector->range (range-remove->vector pred r)))
+  (vector->range (list->vector (range-remove->list pred r))))
 
 (define (range-remove->list pred r)
   (assume (procedure? pred))
@@ -352,9 +349,6 @@
                       (if (pred x) xs (cons x xs)))
                     '()
                     r))
-
-(define (range-remove->vector pred r)
-  (list->vector (range-remove->list pred r)))
 
 (define (range-reverse r)
   (assume (range? r))

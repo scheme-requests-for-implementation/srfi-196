@@ -33,7 +33,7 @@
           range-any range-every
           range-filter->list range-remove->list range-reverse
           range-append
-          range-map range-map->vector range-filter->vector range-remove->vector
+          range-map range-map->vector
           range-filter range-remove
           range-filter-map range-filter-map->list
           range-index range-index-right range-take-while range-drop-while
