@@ -97,13 +97,19 @@ The geometric sequence 1, 1/2, 1/4, &hellip;, 1/512 can be expressed by
 
 <h2>Specification</h2>
 
-<p>Ranges belong to a disjoint type.
-The size of a range object is independent of the
-number of elements it contains.
-Statements about running time exclude time spent in
-the indexer procedure.
+<p>Ranges belong to a disjoint type.</p>
+
+<p> The size of a range object is independent of the number of
+elements it contains, except for <em>vector-style ranges</em>.
+These are returned only by certain procedures noted below.  Such
+ranges cannot compute their results on the fly, and so must compute
+them in advance and store them in a vector or similar O(1) random
+access data structure.  As a result, their size is proportional to
+the number of elements; however, performance guarantees are maintained.
 </p>
 
+<p>Statements about running time exclude time spent in the indexer procedure.
+</p>
 <p>This SRFI recommends, but does not require, that Scheme implementations
 which also provide <a href="https://srfi.schemers.org/srfi-42/srfi-42.html">SRFI 42</a>
 modify it so that the typed generator <code>:range</code> also accepts
@@ -145,11 +151,18 @@ a range over inexact numbers are enumerated by multiplying the index
 by the step value rather than by adding the step value to itself
 repeatedly.  This reduces the likelihood of roundoff errors.</p>
 
-<p><code>(vector->range</code>&nbsp;<em>vector</em><code>)</code></p>
+<p><code>(vector-&gt;range</code>&nbsp;<em>vector</em><code>)</code></p>
 <p>Returns a range whose elements are those of <em>vector</em>.
 The size of the result is fixed once the size of <em>vector</em>
 has been excluded.  It is an error to mutate <em>vector</em>.</p>
+<p><code>(vector->range</code>&nbsp;<em>vector</em><code>)</code></p>
+<p>Returns a range which contains all the elements of the <em>ranges</em>.
 
+<p><code>(range-append</code>&nbsp;<em>vector</em> ...<code>)</code></p>
+<p>Returns a range whose elements are the elements of the <em>ranges</em>
+in order.
+It may return a vector-style range.
+-
 
 <h3 id="predicates">Predicates</h3>
 
@@ -158,21 +171,21 @@ has been excluded.  It is an error to mutate <em>vector</em>.</p>
 otherwise.
 This procedure must run in O(1) time.</p>
 
+<p><code>(range=?</code>&nbsp;<em> pred range ...</em><code>)</code></p>
+<p>Returns <code>#t</code> if all the ranges contain corresponding values
+that are the same in the sense of <em>pred</em>, and <code>#f</code> otherwise.
+</p>
 <h3 id="accessors">Accessors</h3>
 
 <p><code>(range-length</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns the length (number of elements) of <em>range</em>.
 This procedure must run in O(1) time.</p>
 
-<p><code>(range-indexer</code>&nbsp;<em>range</em><code>)</code></p>
-<p>Returns the indexer of <em>range</em>.
-This procedure must run in O(1) time.</p>
-
 <p><code>(range-ref</code>&nbsp;<em>range n</em><code>)</code></p>
 <p>Returns the <em>n</em>th element of <em>range</em>. It is an error if
 <em>n</em> is less than 0 or greater than or equal to the length of
 <em>range</em>.
-This procedure must run in O(<em>n</em>) time.</p>
+This procedure must run in O(1) time.</p>
 
 <p><code>(range-first</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Equivalent to <code>(range-ref</code>&nbsp;<em>range</em>
@@ -199,13 +212,13 @@ This procedure must run in O(1) time.</p>
 <i>end</i>, exclusive.
 This procedure must run in O(1) time.</p>
 
-<p><code>(range-take</code>&nbsp;<em>range count</em><code>)</code><br>
+<p><code>(range-take</code>&nbsp;<em>range count</em><code>)</code><br/>
 <code>(range-take-right</code>&nbsp;<em>range count</em><code>)</code></p>
 <p>Returns a range which contains the first/last <em>count</em> elements of
 <em>range</em>.
 These procedures must run in O(1) time.</p>
 
-<p><code>(range-drop</code>&nbsp;<em>range count</em><code>)</code><br>
+<p><code>(range-drop</code>&nbsp;<em>range count</em><code>)</code><br/>
 <code>(range-drop-right</code>&nbsp;<em>range count</em><code>)</code></p>
 <p>Returns a range which contains all except the first/last <em>count</em> elements
 of <em>range</em>.
@@ -229,24 +242,39 @@ specifically it returns the last value returned by <em>pred</em> or
 is returned.
 This procedure must run in O(<em>n</em>) time.</p>
 
-<p><code>(range-map-&gt;list</code>&nbsp;<em>proc range</em><code>)</code></p>
-<p>Returns a list of the results of applying <em>proc</em> to each
+<p><code>(range-map</code>&nbsp;<em>proc range</em><code>)</code><br/>
+<code>(range-map-&gt;list</code>&nbsp;<em>proc range</em><code>)</code><br/>
+<code>(range-map-&gt;vector</code>&nbsp;<em>proc range</em><code>)</code></p>
+<p>Returns a range/list/vector of the results of applying <em>proc</em> to each
 element of <em>range</em> in order. However, the order in which
 <em>proc</em> is actually applied to the elements is unspecified.
-This procedure must run in O(<em>n</em>) time.</p>
+The <code>range-map</code> procedure may return a vector-style range.
+These procedures must run in O(<em>n</em>) time.
+</p>
 
 <p><code>(range-for-each</code>&nbsp;<em>proc range</em><code>)</code></p>
 <p>Applies <em>proc</em> to each element of <em>range</em> in order. Returns an
 unspecified result.
 This procedure must run in O(<em>n</em>) time.</p>
 
-<p><code>(range-filter-&gt;list</code>&nbsp;<em>pred range</em><code>)</code><br>
-<code>(range-remove-&gt;list</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns a list containing the elements of <em>range</em> that satisfy / do
+<p><code>(range-filter</code>&nbsp;<em>pred range</em><code>)</code><br/>
+<code>(range-filter-&gt;list</code>&nbsp;<em>pred range</em><code>)</code><br/>
+<code>(range-filter-&gt;vector</code>&nbsp;<em>pred range</em><code>)</code><br/>
+<code>(range-remove</code>&nbsp;<em>pred range</em><code>)</code><br/>
+<code>(range-remove-&gt;list</code>&nbsp;<em>pred range</em><code>)</code><br/>
+<code>(range-remove-&gt;vector</code>&nbsp;<em>pred range</em><code>)</code></p>
+<p>Returns a range/list/vector containing the elements of <em>range</em> that satisfy / do
 not satisfy <em>pred</em>.
-This procedure must run in O(<em>n</em>) time.</p>
+The <code>range-filter</code> and <code>range-remove</code>
+procedures may return a vector-style range.
+These procedures must run in O(<em>n</em>) time.</p>
 
-<p><code>(range-fold</code>&nbsp;<em>proc nil range</em><code>)</code><br>
+<p>The <code>range-filter</code> and <code>range-remove</code>
+procedures eagerly compute their results and return specialized
+ranges that store arbitrary elements.  As a result, their size is
+proportional to the number of elements in <em>range</em>.</p>.
+
+<p><code>(range-fold</code>&nbsp;<em>proc nil range</em><code>)</code><br/>
 <code>(range-fold-right</code>&nbsp;<em>proc nil range</em><code>)</code></p>
 <p>Invokes <em>proc</em> on each member of <em>range</em> in order / reverse order, passing the
 result of the previous invocation as a second argument. For the first
@@ -260,19 +288,19 @@ This procedure must run in O(1) time.</p>
 
 <h3 id="searching">Searching</h3>
 
-<p><code>(range-index</code>&nbsp;<em>pred range</em><code>)</code><br>
+<p><code>(range-index</code>&nbsp;<em>pred range</em><code>)</code><br/>
 <code>(range-index-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns the index of the first/last element of <em>range</em> that satisfies
 <em>pred</em>, or <code>#f</code> if there is none.
 These procedures must run in O(<em>n</em>) time.</p>
 
-<p><code>(range-take-while</code>&nbsp;<em>pred range</em><code>)</code><br>
+<p><code>(range-take-while</code>&nbsp;<em>pred range</em><code>)</code><br/>
 <code>(range-take-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range containing the leading/trailing elements of <em>range</em> that satisfy
 <em>pred</em> up to the first/last one that does not.
 These procedures must run in O(<em>n</em>) time.</p>
 
-<p><code>(range-drop-while pred</code>&nbsp;<em>range</em><code>)</code><br>
+<p><code>(range-drop-while pred</code>&nbsp;<em>range</em><code>)</code><br/>
 <code>(range-drop-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range that omits leading/trailing elements of <em>range</em> that satisfy
 <em>pred</em> until the first/last one that does not.
@@ -280,9 +308,10 @@ These procedures must run in O(<em>n</em>) time.</p>
 
 <h3 id="conversion">Conversion</h3>
 
-<p><code>(range-&gt;list</code>&nbsp;<em>range</em><code>)</code><br>
+<p><code>(range-&gt;list</code>&nbsp;<em>range</em><code>)</code><br/>
 <code>(range-&gt;vector</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns a list/vector containing the elements of <em>range</em> in order.
+It is an error to modify the result of <code>range-&gt;vector</code>.
 These procedures must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-&gt;generator</code>&nbsp;<em>range</em><code>)</code></p>
