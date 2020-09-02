@@ -221,37 +221,53 @@ These procedures must run in O(1) time.</p>
 of <em>range</em>.
 These procedures must run in O(1) time.</p>
 
-<p><code>(range-count</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns the number of elements of <em>range</em> which satisfy
-<em>pred</em>.
+<p><code>(range-count</code>&nbsp;<em>pred range1 range2</em> ...<code>)</code></p>
+<p>Applies <em>pred</em> element-wise to the elements of
+<em>ranges</em> and returns the number of applications which returned
+true values. If more than one <em>range</em> is given and not all ranges
+have the same length, <em>range-count</em> terminates when the shortest
+range is exhausted.
 This procedure must run in O(<em>n</em>) time.</p>
 
-<p><code>(range-any</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns true if any of the elements of <em>range</em> satisfy <em>pred</em>.
-Specifically it returns the last value returned by <em>pred</em>. Otherwise,
-<code>#f</code> is returned.
+<p><code>(range-any</code>&nbsp;<em>pred range1 range2</em> ...<code>)</code></p>
+<p>Applies <em>pred</em> element-wise to the elements of the
+<em>ranges</em> and returns true if <em>pred</em> returns true on any
+application. Specifically it returns the last value returned by
+<em>pred</em>. Otherwise, <code>#f</code> is returned. If more than
+one <em>range</em> is given and not all ranges have the same length,
+<em>range-any</em> terminates when the shortest range is exhausted.
 This procedure must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-every</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns true if all the elements of <em>range</em> satisfy <em>pred</em>,
-specifically it returns the last value returned by <em>pred</em> or
-<code>#t</code> if <em>pred</em> was never invoked. Otherwise, <code>#f</code>
-is returned.
-This procedure must run in O(<em>n</em>) time.</p>
+<p>Applies <em>pred</em> element-wise to the elements of the
+<em>ranges</em> and returns true if <em>pred</em> returns true on
+every application. Specifically it returns the last value returned by
+<em>pred</em> or <code>#t</code> if <em>pred</em> was never invoked.
+Otherwise, <code>#f</code> is returned. If more than one
+<em>range</em> is given and not all ranges have the same length,
+<em>range-every</em> terminates when the shortest range is exhausted.
+This procedure must run in O(<em>n</em>) time.
+</p>
 
-<p><code>(range-map</code>&nbsp;<em>proc range</em><code>)</code><br/>
-<code>(range-map-&gt;list</code>&nbsp;<em>proc range</em><code>)</code><br/>
-<code>(range-map-&gt;vector</code>&nbsp;<em>proc range</em><code>)</code></p>
-<p>Returns a range/list/vector of the results of applying <em>proc</em> to each
-element of <em>range</em> in order. However, the order in which
-<em>proc</em> is actually applied to the elements is unspecified.
-The <code>range-map</code> procedure may return a vector-style range.
+<p><code>(range-map</code>&nbsp;<em>proc range1 range2</em> ...<code>)</code><br/>
+<code>(range-map-&gt;list</code>&nbsp;<em>proc range1 range2</em> ...<code>)</code><br/>
+<code>(range-map-&gt;vector</code>&nbsp;<em>proc range1 range2</em> ...<code>)</code></p>
+<p>Applies <em>proc</em> element-wise to the elements of the
+<em>ranges</em> and returns a range/list/vector of the results, in
+order. If more than one <em>range</em> is given and not all ranges
+have the same length, these procedures terminate when the shortest
+range is exhausted. The dynamic order in which <em>proc</em> is
+actually applied to the elements is unspecified. The
+<code>range-map</code> procedure may return a vector-style range.
 These procedures must run in O(<em>n</em>) time.
 </p>
 
-<p><code>(range-for-each</code>&nbsp;<em>proc range</em><code>)</code></p>
-<p>Applies <em>proc</em> to each element of <em>range</em> in order. Returns an
-unspecified result.
+<p><code>(range-for-each</code>&nbsp;<em>proc range1 range2</em> ...<code>)</code></p>
+<p>Applies <em>proc</em> element-wise to the elements of the
+<code>ranges</code> in order. Returns an unspecified result. If more
+than one <em>range</em> is given and not all ranges have the same
+length, <em>range-for-each</em> terminates when the shortest range is
+exhausted.
 This procedure must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-filter</code>&nbsp;<em>pred range</em><code>)</code><br/>
@@ -271,17 +287,20 @@ procedures eagerly compute their results and return specialized
 ranges that store arbitrary elements.  As a result, their size is
 proportional to the number of elements in <em>range</em>.</p>
 
-<p><code>(range-fold</code>&nbsp;<em>proc nil range</em><code>)</code><br/>
-<code>(range-fold-right</code>&nbsp;<em>proc nil range</em><code>)</code></p>
-<p>Invokes <em>proc</em> on each member of <em>range</em> in order / reverse order, passing the
-result of the previous invocation as a second argument. For the first
-invocation, <em>nil</em> is used as the second argument. Returns the result of
+<p><code>(range-fold</code>&nbsp;<em>kons nil range1 range2</em> ...<code>)</code><br/>
+<code>(range-fold-right</code>&nbsp;<em>kons nil range1 range2</em> ...<code>)</code></p>
+<p>Folds <em>kons</em> over the elements of <em>ranges</em> in order / reverse order.
+<em>kons</em> is applied as
+<code>(</code><em>kons state</em> <code>(range-ref</code> <em>range1 i</em><code>)</code> <code>(range-ref</code> <em>range2 i</em><code>)</code> &hellip;<code>)</code>
+where <em>state</em> is the result of the previous invocation and <em>i</em> is the
+current index. For the first
+invocation, <em>nil</em> is used as the first argument. Returns the result of
 the last invocation, or <em>nil</em> if there was no invocation.
-These procedures must run in O(<em>n</em>) time.</p>
-<p><code>(range-reverse</code>&nbsp;<em>range</em><code>)</code></p>
-<p>Returns a range which contains the same elements as <em>range</em>, but in
-reverse order.
-This procedure must run in O(1) time.</p>
+If more
+than one <em>range</em> is given and not all ranges have the same
+length, <em>range-for-each</em> terminates when the shortest range is
+exhausted.
+These procedures must run in O(<em>n</em>) time.</p></p>
 
 <h3 id="searching">Searching</h3>
 
