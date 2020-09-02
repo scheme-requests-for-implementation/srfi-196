@@ -71,7 +71,8 @@ The range objects of this SRFI represent such sequences using only
 a small fixed amount of storage.  Using
 <code>(range-for-each (lambda (i) ...) (numeric-range 0 1000000))</code>
 iterates a million times but with less space overhead than
-<code>iota</code>'s list of ten elements.</p>
+<code>iota</code>'s list of ten elements.
+They can be thought of as compactly stored vectors.</p>
 
 <p>In addition, there are other sequences besides integers from
 which a range may be drawn.  In particular, inexact numbers can
@@ -96,13 +97,19 @@ The geometric sequence 1, 1/2, 1/4, &hellip;, 1/512 can be expressed by
 
 <h2>Specification</h2>
 
-<p>Ranges belong to a disjoint type.
-The size of a range object is independent of the
-number of elements it contains.
-Statements about running time exclude time spent in
-the indexer procedure.
+<p>Ranges belong to a disjoint type.</p>
+
+<p> The size of a range object is independent of the number of
+elements it contains, except for <em>vector-style ranges</em>.
+These are returned only by certain procedures noted below.  Such
+ranges cannot compute their results on the fly, and so must compute
+them in advance and store them in a vector or similar O(1) random
+access data structure.  As a result, their size is proportional to
+the number of elements; however, performance guarantees are maintained.
 </p>
 
+<p>Statements about running time exclude time spent in the indexer procedure.
+</p>
 <p>This SRFI recommends, but does not require, that Scheme implementations
 which also provide <a href="https://srfi.schemers.org/srfi-42/srfi-42.html">SRFI 42</a>
 modify it so that the typed generator <code>:range</code> also accepts
@@ -110,6 +117,27 @@ a single argument which is a range in the sense of this SRFI.
 This feature should be used with caution, as SRFI 42 loops expect
 that <code>:range</code> iterates only over exact rationals.
 </p>
+
+<p>The following names are used for arguments to procedures:</p>
+
+<p><em>obj</em>: Any Scheme object.</p>
+
+<p><em>range</em>: A range object.</p>
+
+<p><em>pred</em>: A predicate that accepts zero or more arguments.</p>
+
+<p><em>equal</em>: A predicate that accepts two arguments and returns a
+boolean value. It is not necessarily an equivalence relation.</p>
+
+<p><em>proc</em>: A procedure that accepts zero or more arguments and
+returns zero or more values.</p>
+
+<p><em>list</em>: A Scheme list.</p>
+
+<p><em>vector</em>: A Scheme vector.</p>
+
+<p>It is an error (unless otherwise noted) if the procedures are passed
+arguments that do not have the type implied by the argument names.</p>
 
 <h3 id="constructors">Constructors</h3>
 <p><code>(range</code>&nbsp;<em>length indexer</em><code>)</code></p>
@@ -144,6 +172,14 @@ a range over inexact numbers are enumerated by multiplying the index
 by the step value rather than by adding the step value to itself
 repeatedly.  This reduces the likelihood of roundoff errors.</p>
 
+<p><code>(vector-&gt;range</code>&nbsp;<em>vector</em><code>)</code></p>
+<p>Returns a range whose elements are those of <em>vector</em>.
+The size of the result is fixed once the size of <em>vector</em>
+has been excluded.  It is an error to mutate <em>vector</em>.</p>
+<p><code>(range-append</code>&nbsp;<em>range</em> ...<code>)</code></p>
+<p>Returns a range whose elements are the elements of the <em>ranges</em>
+in order.
+It may return a vector-style range.
 
 <h3 id="predicates">Predicates</h3>
 
@@ -152,28 +188,29 @@ repeatedly.  This reduces the likelihood of roundoff errors.</p>
 otherwise.
 This procedure must run in O(1) time.</p>
 
+<p><code>(range=?</code>&nbsp;<em>equal range1 range2 ...</em><code>)</code></p>
+<p>Returns <code>#t</code> if all the <em>ranges</em> are of the same
+length and if their corresponding values are the same in the sense of
+<em>equal</em>, and <code>#f</code> otherwise.
+</p>
 <h3 id="accessors">Accessors</h3>
 
 <p><code>(range-length</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns the length (number of elements) of <em>range</em>.
 This procedure must run in O(1) time.</p>
 
-<p><code>(range-indexer</code>&nbsp;<em>range</em><code>)</code></p>
-<p>Returns the indexer of <em>range</em>.
-This procedure must run in O(1) time.</p>
-
 <p><code>(range-ref</code>&nbsp;<em>range n</em><code>)</code></p>
 <p>Returns the <em>n</em>th element of <em>range</em>. It is an error if
 <em>n</em> is less than 0 or greater than or equal to the length of
 <em>range</em>.
-This procedure must run in O(<em>n</em>) time.</p>
+This procedure must run in O(1) time.</p>
 
-<p><code>(range-start</code>&nbsp;<em>range</em><code>)</code></p>
+<p><code>(range-first</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Equivalent to <code>(range-ref</code>&nbsp;<em>range</em>
 <code>0)</code>.
 This procedure must run in O(1) time.</p>
 
-<p><code>(range-end</code>&nbsp;<em>range</em><code>)</code></p>
+<p><code>(range-last</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Equivalent to <code>(range-ref</code>&nbsp;<em>range</em> <code>(-
 (range-length</code>&nbsp;<em>range</em><code>) 1))</code>.
 This procedure must run in O(1) time.</p>
@@ -181,10 +218,11 @@ This procedure must run in O(1) time.</p>
 <h3 id="iteration">Iteration</h3>
 
 <p><code>(range-split-at</code>&nbsp;<em>range index</em><code>)</code></p>
-<p>Returns two values which are ranges. The first value contains all elements
-of <em>range</em> from the zeroth element to the <em>index</em>th element
-exclusive. The second value contains all elements of <em>range</em> from the
-<em>index</em>th element inclusive to the last element.
+<p>Returns two values:
+<code>(range-take</code>&nbsp;<em>range index</em><code>)</code> and
+<code>(range-drop</code>&nbsp;<em>range index</em><code>)</code>.
+It is an error if <em>index</em> is not an exact integer
+between 0 and the length of <em>range</em>, both inclusive.
 This procedure must run in O(1) time.</p>
 <p><code>(subrange</code>&nbsp;<em>range start end</em><code>)</code></p>
 <p>Returns a range which contains the elements of
@@ -192,80 +230,128 @@ This procedure must run in O(1) time.</p>
 <i>end</i>, exclusive.
 This procedure must run in O(1) time.</p>
 
-<p><code>(range-take</code>&nbsp;<em>range count</em><code>)</code><br>
+<p><code>(range-take</code>&nbsp;<em>range count</em><code>)</code><br/>
 <code>(range-take-right</code>&nbsp;<em>range count</em><code>)</code></p>
 <p>Returns a range which contains the first/last <em>count</em> elements of
 <em>range</em>.
 These procedures must run in O(1) time.</p>
 
-<p><code>(range-drop</code>&nbsp;<em>range count</em><code>)</code><br>
+<p><code>(range-drop</code>&nbsp;<em>range count</em><code>)</code><br/>
 <code>(range-drop-right</code>&nbsp;<em>range count</em><code>)</code></p>
 <p>Returns a range which contains all except the first/last <em>count</em> elements
 of <em>range</em>.
 These procedures must run in O(1) time.</p>
 
-<p><code>(range-count</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns the number of elements of <em>range</em> which satisfy
-<em>pred</em>.
+<p><code>(range-count</code>&nbsp;<em>pred range1 range2</em> ...<code>)</code></p>
+<p>Applies <em>pred</em> element-wise to the elements of
+<em>ranges</em> and returns the number of applications which returned
+true values. If more than one <em>range</em> is given and not all ranges
+have the same length, <em>range-count</em> terminates when the shortest
+range is exhausted.
 This procedure must run in O(<em>n</em>) time.</p>
 
-<p><code>(range-any</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns true if any of the elements of <em>range</em> satisfy <em>pred</em>.
-Specifically it returns the last value returned by <em>pred</em>. Otherwise,
-<code>#f</code> is returned.
+<p><code>(range-any</code>&nbsp;<em>pred range1 range2</em> ...<code>)</code></p>
+<p>Applies <em>pred</em> element-wise to the elements of the
+<em>ranges</em> and returns true if <em>pred</em> returns true on any
+application. Specifically it returns the last value returned by
+<em>pred</em>. Otherwise, <code>#f</code> is returned. If more than
+one <em>range</em> is given and not all ranges have the same length,
+<em>range-any</em> terminates when the shortest range is exhausted.
 This procedure must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-every</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns true if all the elements of <em>range</em> satisfy <em>pred</em>,
-specifically it returns the last value returned by <em>pred</em> or
-<code>#t</code> if <em>pred</em> was never invoked. Otherwise, <code>#f</code>
-is returned.
+<p>Applies <em>pred</em> element-wise to the elements of the
+<em>ranges</em> and returns true if <em>pred</em> returns true on
+every application. Specifically it returns the last value returned by
+<em>pred</em> or <code>#t</code> if <em>pred</em> was never invoked.
+Otherwise, <code>#f</code> is returned. If more than one
+<em>range</em> is given and not all ranges have the same length,
+<em>range-every</em> terminates when the shortest range is exhausted.
+This procedure must run in O(<em>n</em>) time.
+</p>
+
+<p><code>(range-map</code>&nbsp;<em>proc range1 range2</em> ...<code>)</code><br/>
+<code>(range-map-&gt;list</code>&nbsp;<em>proc range1 range2</em> ...<code>)</code><br/>
+<code>(range-map-&gt;vector</code>&nbsp;<em>proc range1 range2</em> ...<code>)</code></p>
+<p>Applies <em>proc</em> element-wise to the elements of the
+<em>ranges</em> and returns a range/list/vector of the results, in
+order. If more than one <em>range</em> is given and not all ranges
+have the same length, these procedures terminate when the shortest
+range is exhausted. The dynamic order in which <em>proc</em> is
+actually applied to the elements is unspecified. The
+<code>range-map</code> procedure may return a vector-style range.
+These procedures must run in O(<em>n</em>) time.
+</p>
+
+<p><code>(range-for-each</code>&nbsp;<em>proc range1 range2</em> ...<code>)</code></p>
+<p>Applies <em>proc</em> element-wise to the elements of the
+<code>ranges</code> in order. Returns an unspecified result. If more
+than one <em>range</em> is given and not all ranges have the same
+length, <em>range-for-each</em> terminates when the shortest range is
+exhausted.
 This procedure must run in O(<em>n</em>) time.</p>
 
-<p><code>(range-map-&gt;list</code>&nbsp;<em>proc range</em><code>)</code></p>
-<p>Returns a list of the results of applying <em>proc</em> to each
-element of <em>range</em> in order. However, the order in which
-<em>proc</em> is actually applied to the elements is unspecified.
-This procedure must run in O(<em>n</em>) time.</p>
-
-<p><code>(range-for-each</code>&nbsp;<em>proc range</em><code>)</code></p>
-<p>Applies <em>proc</em> to each element of <em>range</em> in order. Returns an
-unspecified result.
-This procedure must run in O(<em>n</em>) time.</p>
-
-<p><code>(range-filter-&gt;list</code>&nbsp;<em>pred range</em><code>)</code><br>
-<code>(range-remove-&gt;list</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns a list containing the elements of <em>range</em> that satisfy / do
-not satisfy <em>pred</em>.
-This procedure must run in O(<em>n</em>) time.</p>
-
-<p><code>(range-fold</code>&nbsp;<em>proc nil range</em><code>)</code><br>
-<code>(range-fold-right</code>&nbsp;<em>proc nil range</em><code>)</code></p>
-<p>Invokes <em>proc</em> on each member of <em>range</em> in order / reverse order, passing the
-result of the previous invocation as a second argument. For the first
-invocation, <em>nil</em> is used as the second argument. Returns the result of
-the last invocation, or <em>nil</em> if there was no invocation.
+<p><code>(range-filter-map</code> <em>proc range1 range2</em> ...<code>)</code><br/>
+<code>(range-filter-map-&gt;list</code> <em>proc range1 range2</em> ...<code>)</code></p>
+<p>Applies <em>proc</em> element-wise to the elements of the <em>ranges</em> and
+returns a range/list of the true values returned by <em>proc</em>.
+If more than one <em>range</em> is given and not all ranges
+have the same length, these procedures terminate when the shortest
+range is exhausted. The dynamic order in which <em>proc</em> is
+actually applied to the elements is unspecified. The
+<code>range-filter-map</code> procedure may return a vector-style range.
 These procedures must run in O(<em>n</em>) time.</p>
-<p><code>(range-reverse</code>&nbsp;<em>range</em><code>)</code></p>
-<p>Returns a range which contains the same elements as <em>range</em>, but in
-reverse order.
-This procedure must run in O(1) time.</p>
+
+<p><code>(range-filter</code>&nbsp;<em>pred range</em><code>)</code><br/>
+<code>(range-filter-&gt;list</code>&nbsp;<em>pred range</em><code>)</code><br/>
+<code>(range-remove</code>&nbsp;<em>pred range</em><code>)</code><br/>
+<code>(range-remove-&gt;list</code>&nbsp;<em>pred range</em><code>)</code><br/>
+<p>Returns a range/list containing the elements of <em>range</em> that satisfy / do
+not satisfy <em>pred</em>.
+The <code>range-filter</code> and <code>range-remove</code>
+procedures may return a vector-style range.
+These procedures must run in O(<em>n</em>) time.</p>
+
+<p>The <code>range-filter</code> and <code>range-remove</code>
+procedures eagerly compute their results and return specialized
+ranges that store arbitrary elements.  As a result, their size is
+proportional to the number of elements in <em>range</em>.</p>
+
+<p><code>(range-fold</code>&nbsp;<em>kons nil range1 range2</em> ...<code>)</code><br/>
+<code>(range-fold-right</code>&nbsp;<em>kons nil range1 range2</em> ...<code>)</code></p>
+<p>Folds <em>kons</em> over the elements of <em>ranges</em> in order / reverse order.
+<em>kons</em> is applied as
+<code>(</code><em>kons state</em> <code>(range-ref</code> <em>range1 i</em><code>)</code> <code>(range-ref</code> <em>range2 i</em><code>)</code> &hellip;<code>)</code>
+where <em>state</em> is the result of the previous invocation and <em>i</em> is the
+current index. For the first
+invocation, <em>nil</em> is used as the first argument. Returns the result of
+the last invocation, or <em>nil</em> if there was no invocation.
+If more
+than one <em>range</em> is given and not all ranges have the same
+length, these procedures terminate when the shortest range is
+exhausted.
+These procedures must run in O(<em>n</em>) time.</p>
 
 <h3 id="searching">Searching</h3>
 
-<p><code>(range-index</code>&nbsp;<em>pred range</em><code>)</code><br>
-<code>(range-index-right</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns the index of the first/last element of <em>range</em> that satisfies
-<em>pred</em>, or <code>#f</code> if there is none.
+<p><code>(range-index</code>&nbsp;<em>pred range1 range2</em>... <code>)</code><br/>
+<code>(range-index-right</code>&nbsp;<em>pred range1 range2</em>... <code>)</code></p>
+<p>Applies <em>pred</em> element-wise to the elements of
+<em>ranges</em> and returns the index of the first/last element at
+which <em>pred</em> returns true. Otherwise, returns <code>#f</code>.
+If more than one <em>range</em> is given and not all ranges have the same
+length, <em>range-index</em> terminates when the shortest range is
+exhausted. It is an error if the ranges passed to <em>range-index-right</em>
+do not all have the same lengths.
 These procedures must run in O(<em>n</em>) time.</p>
 
-<p><code>(range-take-while</code>&nbsp;<em>pred range</em><code>)</code><br>
+<p><code>(range-take-while</code>&nbsp;<em>pred range</em><code>)</code><br/>
 <code>(range-take-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range containing the leading/trailing elements of <em>range</em> that satisfy
 <em>pred</em> up to the first/last one that does not.
 These procedures must run in O(<em>n</em>) time.</p>
 
-<p><code>(range-drop-while pred</code>&nbsp;<em>range</em><code>)</code><br>
+<p><code>(range-drop-while pred</code>&nbsp;<em>range</em><code>)</code><br/>
 <code>(range-drop-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range that omits leading/trailing elements of <em>range</em> that satisfy
 <em>pred</em> until the first/last one that does not.
@@ -273,9 +359,10 @@ These procedures must run in O(<em>n</em>) time.</p>
 
 <h3 id="conversion">Conversion</h3>
 
-<p><code>(range-&gt;list</code>&nbsp;<em>range</em><code>)</code><br>
+<p><code>(range-&gt;list</code>&nbsp;<em>range</em><code>)</code><br/>
 <code>(range-&gt;vector</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns a list/vector containing the elements of <em>range</em> in order.
+It is an error to modify the result of <code>range-&gt;vector</code>.
 These procedures must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-&gt;generator</code>&nbsp;<em>range</em><code>)</code></p>
@@ -284,17 +371,13 @@ in order.
 This procedure must run in O(1) time,
 and each call of the generator must run in O(1) time.
 
-<p><code>(vector-&gt;range</code>&nbsp;<em>vec</em><code>)</code></p>
-<p>Returns a range containing the elements of the vector <em>vec</em> in order.
-This procedure must run in O(1) time.</p>
-
 <h2>Implementation</h2>
 
 <p>The sample implementation is in the repository of this SRFI.
 An R7RS library file and a separate file containing the actual
 implementation are provided, along with a test file that
 works with SRFI 78, but is self-contained if SRFI 78 does not exist.
-The implementation can take
+The implementation uses SRFI 1 and can take
 advantage of SRFI 145 (<code>assume</code>) if it is present.</p>
 
 

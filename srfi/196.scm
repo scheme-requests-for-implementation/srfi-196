@@ -22,6 +22,9 @@
 (define (exact-natural? x)
   (and (exact-integer? x) (not (negative? x))))
 
+;; Find the least element of a list of naturals.
+(define (minimum ns) (reduce min 0 ns))
+
 (define-record-type <range>
   (raw-range start-index length indexer)
   range?
@@ -71,6 +74,7 @@
 ;;;; Accessors
 
 (define (range-ref r index)
+  (assume (range? r))
   (assume (%range-valid-index? r index) "range-ref: invalid index")
   ((range-indexer r) (+ index (range-start-index r))))
 
@@ -81,9 +85,38 @@
     ((_ r index)
      ((range-indexer r) (+ index (range-start-index r))))))
 
-(define (range-start r) (%range-ref-no-check r (range-start-index r)))
+(define (range-first r) (%range-ref-no-check r (range-start-index r)))
 
-(define (range-end r) (%range-ref-no-check r (- (range-length r) 1)))
+(define (range-last r) (%range-ref-no-check r (- (range-length r) 1)))
+
+;;;; Predicates
+
+(define range=?
+  (case-lambda
+    ((equal ra rb)                      ; two-range fast path
+     (assume (procedure? equal))
+     (assume (range? ra))
+     (%range=?-2 equal ra rb))
+    ((equal . rs)                       ; variadic path
+     (assume (procedure? equal))
+     (assume (pair? rs))
+     (let ((ra (car rs)))
+       (assume (range? ra))
+       (every (lambda (rb) (%range=?-2 equal ra rb)) (cdr rs))))))
+
+(define (%range=?-2 equal ra rb)
+  (assume (range? rb))
+  (or (eqv? ra rb)                      ; quick check
+      (let ((la (range-length ra)))
+        (and (= la (range-length rb))
+             (if (zero? la)
+                 #t                     ; all empty ranges are equal
+                 (let lp ((i 0))
+                   (cond ((= i la) #t)
+                         ((not (equal (%range-ref-no-check ra i)
+                                      (%range-ref-no-check rb i)))
+                          #f)
+                         (else (lp (+ i 1))))))))))
 
 ;;;; Iteration
 
@@ -102,6 +135,7 @@
   (assume (range? r))
   (assume (%range-valid-index? r start) "subrange: invalid start index")
   (assume (%range-valid-bound? r end) "subrange: invalid end index")
+  (assume (not (negative? (- end start))) "subrange: invalid subrange")
   (if (and (zero? start) (= end (range-length r)))
       r
       (raw-range (+ (range-start-index r) start)
@@ -143,67 +177,175 @@
                  (- (range-length r) count)
                  (range-indexer r))))
 
-(define (range-count pred r)
+(define (range-count pred r . rs)
   (assume (procedure? pred))
-  (range-fold (lambda (x c) (if (pred x) (+ c 1) c)) 0 r))
+  (assume (range? r))
+  (if (null? rs)                        ; one-range fast path
+      (%range-fold-1 (lambda (c x) (if (pred x) (+ c 1) c)) 0 r)
+      (apply range-fold                 ; variadic path
+             (lambda (c . xs)
+               (if (apply pred xs) (+ c 1) c))
+             0
+             r
+             rs)))
 
-(define (range-any pred r)
+(define (range-any pred r . rs)
   (assume (procedure? pred))
-  (range-fold (lambda (x last) (or (pred x) last)) #f r))
+  (assume (range? r))
+  (if (null? rs)                        ; one-range fast path
+      (%range-fold-1 (lambda (last x) (or (pred x) last)) #f r)
+      (apply range-fold                 ; variadic path
+             (lambda (last . xs) (or (apply pred xs) last))
+             #f
+             r
+             rs)))
 
-(define (range-every pred r)
+(define (range-every pred r . rs)
   (assume (procedure? pred))
+  (assume (range? r))
   (call-with-current-continuation
    (lambda (return)
-     (range-fold (lambda (x _) (or (pred x) (return #f))) #t r))))
+     (if (null? rs)                     ; one-range fast path
+         (%range-fold-1 (lambda (_ x) (or (pred x) (return #f))) #t r)
+         (apply range-fold              ; variadic path
+                (lambda (_ . xs) (or (apply pred xs) (return #f)))
+                #t
+                r
+                rs)))))
 
-(define (range-map->list proc r)
+(define (range-map proc . rs)
+  (assume (pair? rs))
+  (vector->range (apply range-map->vector proc rs)))
+
+(define (range-filter-map proc . rs)
+  (assume (pair? rs))
+  (vector->range (list->vector (apply range-filter-map->list proc rs))))
+
+(define (range-map->list proc r . rs)
   (assume (procedure? proc))
-  (range-fold-right (lambda (elem xs) (cons (proc elem) xs))
-                    '()
-                    r))
+  (if (null? rs)                        ; one-range fast path
+      (%range-fold-right-1 (lambda (res x) (cons (proc x) res)) '() r)
+      (apply range-fold-right           ; variadic path
+             (lambda (res . xs) (cons (apply proc xs) res))
+             '()
+             r
+             rs)))
 
-(define (range-for-each proc r)
+(define (range-filter-map->list proc r . rs)
+  (if (null? rs)                        ; one-range fast path
+      (%range-fold-right-1 (lambda (res x)
+                             (cond ((proc x) =>
+                                    (lambda (elt) (cons elt res)))
+                                   (else res)))
+                           '()
+                           r)
+      (apply range-fold-right           ; variadic path
+             (lambda (res . xs)
+               (cond ((apply proc xs) => (lambda (elt) (cons elt res)))
+                     (else res)))
+             '()
+             r
+             rs)))
+
+(define (range-map->vector proc r . rs)
   (assume (procedure? proc))
   (assume (range? r))
-  (let ((len (range-length r)))
-    (let lp ((i 0))
-      (if (>= i len)
-          (if #f #f)
-          (begin
-           (proc (%range-ref-no-check r i))
-           (lp (+ i 1)))))))
+  (if (null? rs)                        ; one-range fast path
+      (vector-unfold (lambda (i) (proc (%range-ref-no-check r i)))
+		     (range-length r))
+      (let ((rs* (cons r rs)))          ; variadic path
+        (vector-unfold (lambda (i)
+                         (apply proc (map (lambda (r)
+                                            (%range-ref-no-check r i))
+                                          rs*)))
+                       (minimum (map range-length rs*))))))
 
-(define (range-fold proc nil r)
+(define (range-for-each proc r . rs)
+  (assume (procedure? proc))
+  (assume (range? r))
+  (if (null? rs)                        ; one-range fast path
+      (let ((len (range-length r)))
+        (let lp ((i 0))
+          (cond ((= i len) (if #f #f))
+                (else (proc (%range-ref-no-check r i))
+                      (lp (+ i 1))))))
+      (let* ((rs* (cons r rs))          ; variadic path
+             (len (minimum (map range-length rs*))))
+        (let lp ((i 0))
+          (cond ((= i len) (if #f #f))
+                (else
+                 (apply proc (map (lambda (r)
+                                    (%range-ref-no-check r i))
+                                  rs*))
+                 (lp (+ i 1))))))))
+
+(define (%range-fold-1 proc nil r)
   (assume (procedure? proc))
   (assume (range? r))
   (let ((len (range-length r)))
     (let lp ((i 0) (acc nil))
-      (if (>= i len)
+      (if (= i len)
           acc
-          (lp (+ i 1) (proc (%range-ref-no-check r i) acc))))))
+          (lp (+ i 1) (proc acc (%range-ref-no-check r i)))))))
 
-(define (range-fold-right proc nil r)
+(define range-fold
+  (case-lambda
+    ((proc nil r)                       ; one-range fast path
+     (%range-fold-1 proc nil r))
+    ((proc nil . rs)                    ; variadic path
+     (assume (procedure? proc))
+     (assume (pair? rs))
+     (let ((len (minimum (map range-length rs))))
+       (let lp ((i 0) (acc nil))
+         (if (= i len)
+             acc
+             (lp (+ i 1)
+                 (apply proc acc (map (lambda (r)
+                                        (%range-ref-no-check r i))
+                                      rs)))))))))
+
+(define (%range-fold-right-1 proc nil r)
   (assume (procedure? proc))
   (assume (range? r))
   (let ((len (range-length r)))
     (let rec ((i 0))
-      (if (>= i len)
+      (if (= i len)
           nil
-          (proc (%range-ref-no-check r i) (rec (+ i 1)))))))
+          (proc (rec (+ i 1)) (%range-ref-no-check r i))))))
+
+(define range-fold-right
+  (case-lambda
+    ((proc nil r)                       ; one-range fast path
+     (%range-fold-right-1 proc nil r))
+    ((proc nil . rs)                    ; variadic path
+     (assume (procedure? proc))
+     (assume (pair? rs))
+     (let ((len (minimum (map range-length rs))))
+       (let rec ((i 0))
+         (if (= i len)
+             nil
+             (apply proc
+                    (rec (+ i 1))
+                    (map (lambda (r) (%range-ref-no-check r i)) rs))))))))
+
+(define (range-filter pred r)
+  (vector->range (list->vector (range-filter->list pred r))))
 
 (define (range-filter->list pred r)
   (assume (procedure? pred))
   (assume (range? r))
-  (range-fold-right (lambda (x xs)
+  (range-fold-right (lambda (xs x)
                       (if (pred x) (cons x xs) xs))
                     '()
                     r))
 
+(define (range-remove pred r)
+  (vector->range (list->vector (range-remove->list pred r))))
+
 (define (range-remove->list pred r)
   (assume (procedure? pred))
   (assume (range? r))
-  (range-fold-right (lambda (x xs)
+  (range-fold-right (lambda (xs x)
                       (if (pred x) xs (cons x xs)))
                     '()
                     r))
@@ -215,24 +357,69 @@
              (lambda (n)
                ((range-indexer r) (- (range-length r) 1 n)))))
 
+(define range-append
+  (case-lambda
+    (() (raw-range 0 0 #f))
+    ((r) r)                             ; one-range fast path
+    ((ra rb)                            ; two-range fast path
+     (let ((la (range-length ra))
+           (lb (range-length rb)))
+       (raw-range 0
+                  (+ la lb)
+                  (lambda (i)
+                    (if (< i la)
+                        (%range-ref-no-check ra i)
+                        (%range-ref-no-check rb (- i la)))))))
+    (rs                                 ; variadic path
+     (let ((lens (map range-length rs)))
+       (raw-range 0
+                  (reduce + 0 lens)
+                  (lambda (i)
+                    (let lp ((i i) (rs rs) (lens lens))
+                      (if (< i (car lens))
+                          (%range-ref-no-check (car rs) i)
+                          (lp (- i (car lens)) (cdr rs) (cdr lens))))))))))
+
 ;;;; Searching
 
-(define (range-index pred r)
+(define (range-index pred r . rs)
   (assume (procedure? pred))
   (assume (range? r))
-  (let ((len (range-length r)))
-    (let lp ((i 0))
-      (cond ((>= i len) #f)
-            ((pred (%range-ref-no-check r i)) i)
-            (else (lp (+ i 1)))))))
+  (if (null? rs)                        ; one-range fast path
+      (let ((len (range-length r)))
+        (let lp ((i 0))
+          (cond ((= i len) #f)
+                ((pred (%range-ref-no-check r i)) i)
+                (else (lp (+ i 1))))))
+      (let* ((rs* (cons r rs))          ; variadic path
+             (len (minimum (map range-length rs*))))
+        (let lp ((i 0))
+          (cond ((= i len) #f)
+                ((apply pred
+                        (map (lambda (s) (%range-ref-no-check s i))
+                             rs*))
+                 i)
+                (else (lp (+ i 1))))))))
 
-(define (range-index-right pred r)
+(define (range-index-right pred r . rs)
   (assume (procedure? pred))
   (assume (range? r))
-  (let lp ((i (- (range-length r) 1)))
-    (cond ((< i 0) #f)
-          ((pred (%range-ref-no-check r i)) i)
-          (else (lp (- i 1))))))
+  (if (null? rs)                        ; one-range fast path
+      (let lp ((i (- (range-length r) 1)))
+        (cond ((< i 0) #f)
+              ((pred (%range-ref-no-check r i)) i)
+              (else (lp (- i 1)))))
+      (let ((len (range-length r))      ; variadic path
+            (rs* (cons r rs)))
+        (assume (every (lambda (s) (= len (range-length s))) rs)
+                "range-index-right: ranges must be of the same length")
+        (let lp ((i (- len 1)))
+          (cond ((< i 0) #f)
+                ((apply pred
+                        (map (lambda (s) (%range-ref-no-check s i))
+                             rs*))
+                 i)
+                (else (lp (- i 1))))))))
 
 (define (range-take-while pred r)
   (let ((count (range-index (lambda (x) (not (pred x))) r)))
@@ -255,19 +442,12 @@
 ;;;; Conversion
 
 (define (range->list r)
-  (assume (range? r))
-  (range-fold-right cons '() r))
+  (range-fold-right xcons '() r))
 
 (define (range->vector r)
   (assume (range? r))
-  (let* ((len (range-length r))
-         (vec (make-vector len)))
-    (let lp ((i 0))
-      (if (= i len)
-          vec
-          (begin
-           (vector-set! vec i (%range-ref-no-check r i))
-           (lp (+ i 1)))))))
+  (vector-unfold (lambda (i) (%range-ref-no-check r i))
+                 (range-length r)))
 
 (define (range->generator r)
   (assume (range? r))
