@@ -315,10 +315,15 @@ These procedures must run in O(<em>n</em>) time.</p></p>
 
 <h3 id="searching">Searching</h3>
 
-<p><code>(range-index</code>&nbsp;<em>pred range</em><code>)</code><br/>
-<code>(range-index-right</code>&nbsp;<em>pred range</em><code>)</code></p>
-<p>Returns the index of the first/last element of <em>range</em> that satisfies
-<em>pred</em>, or <code>#f</code> if there is none.
+<p><code>(range-index</code>&nbsp;<em>pred range1 range2</em>... <code>)</code><br/>
+<code>(range-index-right</code>&nbsp;<em>pred range1 range2</em>... <code>)</code></p>
+<p>Applies <em>pred</em> element-wise to the elements of
+<em>ranges</em> and returns the index of the first/last element at
+which <em>pred</em> returns true. Otherwise, returns <code>#f</code>.
+If more than one <em>range</em> is given and not all ranges have the same
+length, <em>range-index</em> terminates when the shortest range is
+exhausted. It is an error if the ranges passed to <em>range-index-right</em>
+do not all have the same lengths.
 These procedures must run in O(<em>n</em>) time.</p>
 
 <p><code>(range-take-while</code>&nbsp;<em>pred range</em><code>)</code><br/>
