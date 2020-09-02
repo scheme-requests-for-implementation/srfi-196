@@ -155,14 +155,10 @@ repeatedly.  This reduces the likelihood of roundoff errors.</p>
 <p>Returns a range whose elements are those of <em>vector</em>.
 The size of the result is fixed once the size of <em>vector</em>
 has been excluded.  It is an error to mutate <em>vector</em>.</p>
-<p><code>(vector->range</code>&nbsp;<em>vector</em><code>)</code></p>
-<p>Returns a range which contains all the elements of the <em>ranges</em>.
-
-<p><code>(range-append</code>&nbsp;<em>vector</em> ...<code>)</code></p>
+<p><code>(range-append</code>&nbsp;<em>range</em> ...<code>)</code></p>
 <p>Returns a range whose elements are the elements of the <em>ranges</em>
 in order.
 It may return a vector-style range.
--
 
 <h3 id="predicates">Predicates</h3>
 
@@ -272,7 +268,7 @@ These procedures must run in O(<em>n</em>) time.</p>
 <p>The <code>range-filter</code> and <code>range-remove</code>
 procedures eagerly compute their results and return specialized
 ranges that store arbitrary elements.  As a result, their size is
-proportional to the number of elements in <em>range</em>.</p>.
+proportional to the number of elements in <em>range</em>.</p>
 
 <p><code>(range-fold</code>&nbsp;<em>proc nil range</em><code>)</code><br/>
 <code>(range-fold-right</code>&nbsp;<em>proc nil range</em><code>)</code></p>
