@@ -118,6 +118,27 @@ This feature should be used with caution, as SRFI 42 loops expect
 that <code>:range</code> iterates only over exact rationals.
 </p>
 
+<p>The following names are used for arguments to procedures:</p>
+
+<p><em>obj</em>: Any Scheme object.</p>
+
+<p><em>range</em>: A range object.</p>
+
+<p><em>pred</em>: A predicate that accepts zero or more arguments.</p>
+
+<p><em>equal</em>: A predicate that accepts two arguments and returns a
+boolean value. It is not necessarily an equivalence relation.</p>
+
+<p><em>proc</em>: A procedure that accepts zero or more arguments and
+returns zero or more values.</p>
+
+<p><em>list</em>: A Scheme list.</p>
+
+<p><em>vector</em>: A Scheme vector.</p>
+
+<p>It is an error (unless otherwise noted) if the procedures are passed
+arguments that do not have the type implied by the argument names.</p>
+
 <h3 id="constructors">Constructors</h3>
 <p><code>(range</code>&nbsp;<em>length indexer</em><code>)</code></p>
 <p>Returns a range whose length (number of elements) is <i>length</i>.
