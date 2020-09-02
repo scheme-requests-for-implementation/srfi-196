@@ -137,6 +137,7 @@ returns zero or more values.</p>
 
 <p><em>vector</em>: A Scheme vector.</p>
 
+<p><em>string</em>: A Scheme string.</p>
 <p>It is an error (unless otherwise noted) if the procedures are passed
 arguments that do not have the type implied by the argument names.</p>
 
@@ -173,10 +174,15 @@ a range over inexact numbers are enumerated by multiplying the index
 by the step value rather than by adding the step value to itself
 repeatedly.  This reduces the likelihood of roundoff errors.</p>
 
-<p><code>(vector-&gt;range</code>&nbsp;<em>vector</em><code>)</code></p>
+<p><code>(vector-range</code>&nbsp;<em>vector</em><code>)</code></p>
 <p>Returns a range whose elements are those of <em>vector</em>.
 The size of the result is fixed once the size of <em>vector</em>
 has been excluded.  It is an error to mutate <em>vector</em>.</p>
+
+<p><code>(string-range</code> <em>string</em><code>)</code></p>
+<p>Returns a range whose elements are those of <em>string</em>. It is
+an error to mutate <em>string</em>.</p>
+
 <p><code>(range-append</code>&nbsp;<em>range</em> ...<code>)</code></p>
 <p>Returns a range whose elements are the elements of the <em>ranges</em>
 in order.
@@ -361,10 +367,20 @@ These procedures must run in O(<em>n</em>) time.</p>
 <h3 id="conversion">Conversion</h3>
 
 <p><code>(range-&gt;list</code>&nbsp;<em>range</em><code>)</code><br/>
-<code>(range-&gt;vector</code>&nbsp;<em>range</em><code>)</code></p>
-<p>Returns a list/vector containing the elements of <em>range</em> in order.
-It is an error to modify the result of <code>range-&gt;vector</code>.
+<code>(range-&gt;vector</code>&nbsp;<em>range</em><code>)</code><br/>
+<code>(range-&gt;string</code>&nbsp;<em>range</em><code>)</code></p>
+<p>Returns a list/vector/string containing the elements of <em>range</em> in order.
+It is an error to modify the result of <code>range-&gt;vector</code>
+or of <code>range-&gt;string</code>.  In the case of <code>range-&gt;string</code>,
+it is an error if any element of <em>range</em> is not a character.
 These procedures must run in O(<em>n</em>) time.</p>
+
+<p><code>(vector-&gt;range</code> <em>vector</em><code>)</code></p>
+<p>Returns a range whose elements are those of <em>vector</em>.
+Note that, unlike in the case of <code>vector-range</code>, it is not
+an error to mutate <em>vector</em>; future mutations of
+<em>vector</em> are guaranteed not to affect the range returned by
+<code>vector-&gt;range</code>.</p>
 
 <p><code>(range-&gt;generator</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns a SRFI 158 generator that generates the elements of <em>range</em>
@@ -387,6 +403,10 @@ advantage of SRFI 145 (<code>assume</code>) if it is present.</p>
 <p>Without <a href="https://docs.python.org/3.8/library/stdtypes.html#ranges">Python's <code>range</code> object</a>,
 this SRFI would not exist.  Thanks also to the contributors on the SRFI 196 mailing list.
 </p>
+
+<p>Special thanks to Marc Nieper-Wißkirchen, who provided extensive
+feedback and invaluable insights during the development of this
+SRFI.</p>
 
 <h2>Copyright</h2>
 Copyright &copy; John Cowan, Wolfgang Corcoran-Mathe (2020).

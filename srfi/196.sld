@@ -23,6 +23,8 @@
         (define (assume b) #t))))
 
   (export range numeric-range
+          vector-range
+          string-range
           range?
           range=?
           range-length range-ref
@@ -39,6 +41,7 @@
           range-index range-index-right range-take-while range-drop-while
           range-take-while-right range-drop-while-right
           vector->range
+          range->string
           range->list range->generator range->vector)
 
   (include "196.scm"))
