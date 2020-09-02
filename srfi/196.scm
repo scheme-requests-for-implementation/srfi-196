@@ -453,6 +453,10 @@
   (vector-unfold (lambda (i) (%range-ref-no-check r i))
                  (range-length r)))
 
+(define (vector->range vec)
+  (assume (vector? vec))
+  (vector-range (vector-copy vec)))
+
 (define (range->generator r)
   (assume (range? r))
   (let ((i 0) (len (range-length r)))

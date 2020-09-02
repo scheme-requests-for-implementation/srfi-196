@@ -39,6 +39,7 @@
           range-filter-map range-filter-map->list
           range-index range-index-right range-take-while range-drop-while
           range-take-while-right range-drop-while-right
+          vector->range
           range->list range->generator range->vector)
 
   (include "196.scm"))

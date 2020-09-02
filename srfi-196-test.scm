@@ -118,11 +118,14 @@
 
   (check (vector->list (range->vector test-num-range)) => test-num-seq)
 
-  (let ((vec (vector 1 3 5 7 9)))
-    (check (range-length (vector-range vec))  => (vector-length vec))
-    (check (range-first (vector-range vec))   => (vector-ref vec 0))
-    (check (range-last (vector-range vec))    => (vector-ref vec 4))
-    (check (range->vector (vector-range vec)) => vec))
+  (let* ((vec (vector 1 3 5 7 9))
+         (vrange (vector->range vec)))
+    (check (range-length vrange)  => (vector-length vec))
+    (check (range-first vrange)   => (vector-ref vec 0))
+    (check (range-last vrange)    => (vector-ref vec 4))
+    (check (range->vector vrange) => vec)
+    (check (range->list (begin (vector-set! vec 0 0) vrange))
+     => '(1 3 5 7 9)))
 )
 
 (define (check-constructors)
@@ -140,6 +143,12 @@
   (check (range->list (numeric-range 2 -2 -1))    => (iota 4 2 -1))
   (check (range->list (numeric-range -4 -8 -1))   => (iota 4 -4 -1))
   (check (range->list (numeric-range -1 -3 -0.6)) => (iota 4 -1 -0.6))
+
+  (let ((vec (vector 1 3 5 7 9)))
+    (check (range-length (vector-range vec))  => (vector-length vec))
+    (check (range-first (vector-range vec))   => (vector-ref vec 0))
+    (check (range-last (vector-range vec))    => (vector-ref vec 4))
+    (check (range->vector (vector-range vec)) => vec))
 )
 
 ;;;; Predicates
