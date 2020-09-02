@@ -96,6 +96,17 @@ The geometric sequence 1, 1/2, 1/4, &hellip;, 1/512 can be expressed by
 <code>(range 10 (lambda (n) (expt 1/2 n)))</code>.
 </li></ul>
 
+<p>The rationale for <code>string-range</code> is to provide
+efficient random access to strings.
+There have been many
+attempts to ensure O(1) reference to string characters, such as string
+cursors, UTF-32 encoding, texts, immutable strings, and so on.
+In a Scheme that provides O(1) access to strings, the indexer
+of the range returned by <code>string-range</code>
+simply calls <code>string-ref</code>.
+But if only O(<em>n</em>) access is available,
+this procedure may return a vector-style range (see below) whose elements are characters.
+
 <h2>Specification</h2>
 
 <p>Ranges belong to a disjoint type.</p>
@@ -111,6 +122,7 @@ the number of elements; however, performance guarantees are maintained.
 
 <p>Statements about running time exclude time spent in the indexer procedure.
 </p>
+
 <p>This SRFI recommends, but does not require, that Scheme implementations
 which also provide <a href="https://srfi.schemers.org/srfi-42/srfi-42.html">SRFI 42</a>
 modify it so that the typed generator <code>:range</code> also accepts
@@ -181,7 +193,10 @@ has been excluded.  It is an error to mutate <em>vector</em>.</p>
 
 <p><code>(string-range</code> <em>string</em><code>)</code></p>
 <p>Returns a range whose elements are those of <em>string</em>. It is
-an error to mutate <em>string</em>.</p>
+an error to mutate <em>string</em>.
+This procedure must run in O(<em>n</em>) time,
+where <em>n</em> is the length of <em>string</em>.
+</p>
 
 <p><code>(range-append</code>&nbsp;<em>range</em> ...<code>)</code></p>
 <p>Returns a range whose elements are the elements of the <em>ranges</em>
@@ -222,6 +237,10 @@ This procedure must run in O(1) time.</p>
 (range-length</code>&nbsp;<em>range</em><code>) 1))</code>.
 This procedure must run in O(1) time.</p>
 
+<p><code>(range-segment</code>&nbsp;<em>range k</em><code>)</code></p>
+<p>Returns a list of ranges representing the consecutive subranges of length <em>k</em>.
+The last range may be shorter than <em>k</em>.
+</p>
 <h3 id="iteration">Iteration</h3>
 
 <p><code>(range-split-at</code>&nbsp;<em>range index</em><code>)</code></p>
