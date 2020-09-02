@@ -366,9 +366,12 @@ These procedures must run in O(<em>n</em>) time.</p>
 <h3 id="conversion">Conversion</h3>
 
 <p><code>(range-&gt;list</code>&nbsp;<em>range</em><code>)</code><br/>
-<code>(range-&gt;vector</code>&nbsp;<em>range</em><code>)</code></p>
-<p>Returns a list/vector containing the elements of <em>range</em> in order.
-It is an error to modify the result of <code>range-&gt;vector</code>.
+<code>(range-&gt;vector</code>&nbsp;<em>range</em><code>)</code><br/>
+<code>(range-&gt;string</code>&nbsp;<em>range</em><code>)</code></p>
+<p>Returns a list/vector/string containing the elements of <em>range</em> in order.
+It is an error to modify the result of <code>range-&gt;vector</code>
+or of <code>range-&gt;string</code>.  In the case of <code>range-&gt;string</code>,
+it is an error if any element of <em>range</em> is not a character.
 These procedures must run in O(<em>n</em>) time.</p>
 
 <p><code>(vector-&gt;range</code> <em>vector</em><code>)</code></p>

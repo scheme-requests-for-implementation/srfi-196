@@ -118,6 +118,10 @@
 
   (check (vector->list (range->vector test-num-range)) => test-num-seq)
 
+  (check (range->string test-empty-range) => "")
+  (let ((s "0123456789"))
+    (check (range->string (string-range s)) => s))
+
   (let* ((vec (vector 1 3 5 7 9))
          (vrange (vector->range vec)))
     (check (range-length vrange)  => (vector-length vec))

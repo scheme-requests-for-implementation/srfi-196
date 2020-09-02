@@ -463,6 +463,12 @@
   (vector-unfold (lambda (i) (%range-ref-no-check r i))
                  (range-length r)))
 
+(define (range->string r)
+  (assume (range? r))
+  (let ((res (make-string (range-length r))))
+    (range-fold (lambda (i c) (string-set! res i c) (+ i 1)) 0 r)
+    res))
+
 (define (vector->range vec)
   (assume (vector? vec))
   (vector-range (vector-copy vec)))
