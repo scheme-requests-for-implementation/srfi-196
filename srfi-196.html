@@ -34,9 +34,10 @@
 <h2>Abstract</h2>
 
 <p>Ranges are immutable collections that can be enumerated but are
-represented algorithmically rather than by a per-element data
+represented algorithmically (with certain exceptions) rather than
+by a per-element data
 structure.  This SRFI defines a large subset of the sequence operations
-defined on lists, vectors, and other collections.  If necessary,
+defined on lists, vectors, strings, and other collections.  If necessary,
 a range can be converted to a list or vector of its elements or a generator
 that will lazily produce each element in the range.</p>
 
@@ -77,7 +78,7 @@ iterates a million times but with less space overhead than
 They can be thought of as compactly stored vectors.</p>
 
 <p>In addition, there are other sequences besides integers from
-which a range may be drawn.  In particular, inexact numbers can
+which a range can be drawn.  In particular, inexact numbers can
 also specify ranges: <code>(numeric-range 0.0 1.0 0.1)</code>
 specifies the sequence 0.0, 0.1, ... 0.9,
 at least when inexact numbers are represented
@@ -122,6 +123,7 @@ the number of elements; however, performance guarantees are maintained.
 </p>
 
 <p>Statements about running time exclude time spent in the indexer procedure.
+However, this SRFI recommends that indexers run in O(1) time.
 </p>
 
 <p>This SRFI recommends, but does not require, that Scheme implementations
@@ -151,6 +153,7 @@ returns zero or more values.</p>
 <p><em>vector</em>: A Scheme vector.</p>
 
 <p><em>string</em>: A Scheme string.</p>
+
 <p>It is an error (unless otherwise noted) if the procedures are passed
 arguments that do not have the type implied by the argument names.</p>
 
@@ -240,7 +243,7 @@ This procedure must run in O(1) time.</p>
 
 <p><code>(range-segment</code>&nbsp;<em>range k</em><code>)</code></p>
 <p>Returns a list of ranges representing the consecutive subranges of length <em>k</em>.
-The last range may be shorter than <em>k</em>.
+The last range is allowed to be shorter than <em>k</em>.
 </p>
 <h3 id="iteration">Iteration</h3>
 
