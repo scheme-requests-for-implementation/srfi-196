@@ -119,10 +119,10 @@
   (check (vector->list (range->vector test-num-range)) => test-num-seq)
 
   (let ((vec (vector 1 3 5 7 9)))
-    (check (range-length (vector->range vec))  => (vector-length vec))
-    (check (range-first (vector->range vec))   => (vector-ref vec 0))
-    (check (range-last (vector->range vec))    => (vector-ref vec 4))
-    (check (range->vector (vector->range vec)) => vec))
+    (check (range-length (vector-range vec))  => (vector-length vec))
+    (check (range-first (vector-range vec))   => (vector-ref vec 0))
+    (check (range-last (vector-range vec))    => (vector-ref vec 4))
+    (check (range->vector (vector-range vec)) => vec))
 )
 
 (define (check-constructors)
@@ -152,8 +152,8 @@
   (check (range=? eqv? test-num-range test-num-range)            => #t)
   (check (range=? eqv? test-num-range (numeric-range 10 30))     => #t)
   (check (range=? eqv? test-num-range (numeric-range 10 20))     => #f)
-  (check (range=? eqv? test-bool-range (vector->range #(#f #t))) => #t)
-  (check (range=? eqv? test-bool-range (vector->range #(#t #f))) => #f)
+  (check (range=? eqv? test-bool-range (vector-range #(#f #t))) => #t)
+  (check (range=? eqv? test-bool-range (vector-range #(#t #f))) => #f)
   (check (range=? eqv?
                   test-num-range
                   (numeric-range 10 30)

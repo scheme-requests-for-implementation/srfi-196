@@ -71,6 +71,10 @@
                "numeric-range: invalid parameters")
        (raw-range 0 len (lambda (n) (+ start (* n step))))))))
 
+(define (vector-range vec)
+  (assume (vector? vec))
+  (raw-range 0 (vector-length vec) (lambda (i) (vector-ref vec i))))
+
 ;;;; Accessors
 
 (define (range-ref r index)
@@ -215,11 +219,11 @@
 
 (define (range-map proc . rs)
   (assume (pair? rs))
-  (vector->range (apply range-map->vector proc rs)))
+  (vector-range (apply range-map->vector proc rs)))
 
 (define (range-filter-map proc . rs)
   (assume (pair? rs))
-  (vector->range (list->vector (apply range-filter-map->list proc rs))))
+  (vector-range (list->vector (apply range-filter-map->list proc rs))))
 
 (define (range-map->list proc r . rs)
   (assume (procedure? proc))
@@ -329,7 +333,7 @@
                     (map (lambda (r) (%range-ref-no-check r i)) rs))))))))
 
 (define (range-filter pred r)
-  (vector->range (list->vector (range-filter->list pred r))))
+  (vector-range (list->vector (range-filter->list pred r))))
 
 (define (range-filter->list pred r)
   (assume (procedure? pred))
@@ -340,7 +344,7 @@
                     r))
 
 (define (range-remove pred r)
-  (vector->range (list->vector (range-remove->list pred r))))
+  (vector-range (list->vector (range-remove->list pred r))))
 
 (define (range-remove->list pred r)
   (assume (procedure? pred))
@@ -459,7 +463,3 @@
            (let ((v (%range-ref-no-check r i)))
              (set! i (+ i 1))
              v))))))
-
-(define (vector->range vec)
-  (assume (vector? vec))
-  (raw-range 0 (vector-length vec) (lambda (i) (vector-ref vec i))))
