@@ -321,6 +321,10 @@
                                          test-num-range))
           (filter-map (lambda (x) (and (even? x) x)) test-num-seq))
    => #t)
+  (let ((proc (lambda (x y) (and (even? x) (even? y) (+ x y)))))
+    (check (range=/eqv? (range-filter-map proc test-num-range test-num-range)
+                        (numeric-range 20 60 4))
+     => #t))
 
   (check (range-filter-map->list never test-bool-range) => '())
   (check (equal? (range-filter-map->list values test-num-range)
@@ -331,6 +335,12 @@
                                   test-num-range)
           (filter-map (lambda (x) (and (even? x) x)) test-num-seq))
    => #t)
+  (let ((proc (lambda (x y) (and (even? x) (even? y) (+ x y)))))
+    (check (equal? (range-filter-map->list proc
+                                           test-num-range
+                                           test-num-range)
+                   (filter-map proc test-num-seq test-num-seq))
+     => #t))
 
   (check (let ((v #f))
            (range-for-each (lambda (x) (set! v x)) test-bool-range)
