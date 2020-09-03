@@ -33,12 +33,14 @@
 
 <h2>Abstract</h2>
 
-<p>Ranges are immutable collections that can be enumerated but are
-represented algorithmically (with certain exceptions) rather than
-by a per-element data
-structure.  This SRFI defines a large subset of the sequence operations
+<p>Ranges are collections somewhat similar to vectors, except that
+they are immutable and are represented algorithmically rather than
+by a per-element data structure (with certain exceptions).
+In particular, referencing a particular element of a range
+takes O(1) time, just as for a vector.
+This SRFI defines a large subset of the sequence operations
 defined on lists, vectors, strings, and other collections.  If necessary,
-a range can be converted to a list or vector of its elements or a generator
+a range can be converted to a list, vector, or string of its elements or a generator
 that will lazily produce each element in the range.</p>
 
 <h2>Issues</h2>
@@ -70,7 +72,7 @@ the generated list includes the lower bound and excludes the upper bound.</p>
 To iterate a million times involves constructing a list of a million
 numbers to be iterated over and immediately discarded as garbage.
 This is not something you want to do in the inner loop of your code.
-The range objects of this SRFI represent such sequences using only
+The range objects of this SRFI represent such sequences using (as a rule)
 a small fixed amount of storage.  Using
 <code>(range-for-each (lambda (i) ...) (numeric-range 0 1000000))</code>
 iterates a million times but with less space overhead than
@@ -83,7 +85,7 @@ also specify ranges: <code>(numeric-range 0.0 1.0 0.1)</code>
 specifies the sequence 0.0, 0.1, ... 0.9,
 at least when inexact numbers are represented
 as IEEE 754 binary double floats (as is usually the case).
-Roundoff error is still possible by multiplying, but it is
+Roundoff error is still possible when multiplying, but it is
 greatly reduced compared to accumulated error by repeated adding.
 </p>
 <p>Two more examples:
@@ -102,12 +104,12 @@ The geometric sequence 1, 1/2, 1/4, &hellip;, 1/512 can be expressed by
 efficient random access to strings.
 There have been many
 attempts to ensure O(1) reference to string characters, such as string
-cursors, UTF-32 encoding, texts, immutable strings, and so on.
+cursors, UTF-32 encoding, SRFI 135 texts, immutable strings, and so on.
 In a Scheme that provides O(1) access to strings, the indexer
-of the range returned by <code>string-range</code>
-simply calls <code>string-ref</code>.
-But if only O(<em>n</em>) access is available,
-this procedure may return a vector-style range (see below) whose elements are characters.
+of the range returned by <code>string-range</code> simply calls
+<code>string-ref</code>.  But if only O(<em>n</em>) access is
+available, this procedure may return a vector-style range.  whose
+indexer contains a vector of characters.
 
 <h2>Specification</h2>
 
@@ -115,11 +117,13 @@ this procedure may return a vector-style range (see below) whose elements are ch
 
 <p> The size of a range object is independent of the number of
 elements it contains, except for <em>vector-style ranges</em>.
-These are returned only by certain procedures noted below.  Such
-ranges cannot compute their results on the fly, and so must compute
+These are created only by certain procedures noted below.
+These ranges cannot compute their results on the fly, and so must compute
 them in advance and store them in a vector or similar O(1) random
 access data structure.  As a result, their size is proportional to
 the number of elements; however, performance guarantees are maintained.
+A procedure that is passed a vector-style range
+often returns a vector-style range.
 </p>
 
 <p>Statements about running time exclude time spent in the indexer procedure.
@@ -206,6 +210,8 @@ where <em>n</em> is the length of <em>string</em>.
 <p>Returns a range whose elements are the elements of the <em>ranges</em>
 in order.
 It may return a vector-style range.
+This procedure must run in O(<em>n</em>) time,
+where <em>n</em> is the total number of elements in all the ranges.
 
 <h3 id="predicates">Predicates</h3>
 
@@ -241,10 +247,6 @@ This procedure must run in O(1) time.</p>
 (range-length</code>&nbsp;<em>range</em><code>) 1))</code>.
 This procedure must run in O(1) time.</p>
 
-<p><code>(range-segment</code>&nbsp;<em>range k</em><code>)</code></p>
-<p>Returns a list of ranges representing the consecutive subranges of length <em>k</em>.
-The last range is allowed to be shorter than <em>k</em>.
-</p>
 <h3 id="iteration">Iteration</h3>
 
 <p><code>(range-split-at</code>&nbsp;<em>range index</em><code>)</code></p>
@@ -259,6 +261,10 @@ This procedure must run in O(1) time.</p>
 <i>range</i> from index <i>start</i>, inclusive, through index
 <i>end</i>, exclusive.
 This procedure must run in O(1) time.</p>
+<p><code>(range-segment</code>&nbsp;<em>range k</em><code>)</code></p>
+<p>Returns a list of ranges representing the consecutive subranges of length <em>k</em>.
+The last range is allowed to be shorter than <em>k</em>.
+</p>
 
 <p><code>(range-take</code>&nbsp;<em>range count</em><code>)</code><br/>
 <code>(range-take-right</code>&nbsp;<em>range count</em><code>)</code></p>
