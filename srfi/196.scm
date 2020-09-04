@@ -461,22 +461,24 @@
                 (else (lp (- i 1))))))))
 
 (define (range-take-while pred r)
-  (let ((count (range-index (lambda (x) (not (pred x))) r)))
-    (if count (range-take r count) r)))
+  (cond ((range-index (lambda (x) (not (pred x))) r) =>
+         (lambda (i) (range-take r i)))
+        (else r)))
 
 (define (range-take-while-right pred r)
-  (let ((idx (range-index-right (lambda (x) (not (pred x))) r)))
-    (if idx (range-take-right r (- (range-length r) 1 idx)) r)))
+  (cond ((range-index-right (lambda (x) (not (pred x))) r) =>
+         (lambda (i) (range-take-right r (- (range-length r) 1 i))))
+        (else r)))
 
 (define (range-drop-while pred r)
-  (let ((count (range-index (lambda (x) (not (pred x))) r)))
-    (if count (range-drop r count) (%empty-range-from r))))
+  (cond ((range-index (lambda (x) (not (pred x))) r) =>
+         (lambda (i) (range-drop r i)))
+        (else (%empty-range-from r))))
 
 (define (range-drop-while-right pred r)
-  (let ((idx (range-index-right (lambda (x) (not (pred x))) r)))
-    (if idx
-        (range-drop-right r (- (range-length r) 1 idx))
-        (%empty-range-from r))))
+  (cond ((range-index-right (lambda (x) (not (pred x))) r) =>
+         (lambda (i) (range-drop-right r (- (range-length r) 1 i))))
+        (else (%empty-range-from r))))
 
 ;;;; Conversion
 
