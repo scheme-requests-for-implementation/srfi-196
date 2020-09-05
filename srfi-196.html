@@ -105,11 +105,9 @@ efficient random access to strings.
 There have been many
 attempts to ensure O(1) reference to string characters, such as string
 cursors, UTF-32 encoding, SRFI 135 texts, immutable strings, and so on.
-In a Scheme that provides O(1) access to strings, the indexer
-of the range returned by <code>string-range</code> simply calls
-<code>string-ref</code>.  But if only O(<em>n</em>) access is
-available, this procedure may return a vector-style range.  whose
-indexer contains a vector of characters.
+Because the <code>range-ref</code> procedure runs in O(1) time,
+a range created by <code>string-range</code> can efficiently
+access arbitrary characters of the range.
 
 <h2>Specification</h2>
 
@@ -124,10 +122,6 @@ access data structure.  As a result, their size is proportional to
 the number of elements; however, performance guarantees are maintained.
 A procedure that is passed a vector-style range
 often returns a vector-style range.
-</p>
-
-<p>Statements about running time exclude time spent in the indexer procedure.
-However, this SRFI recommends that indexers run in O(1) time.
 </p>
 
 <p>This SRFI recommends, but does not require, that Scheme implementations
@@ -166,9 +160,14 @@ arguments that do not have the type implied by the argument names.</p>
 <p>Returns a range whose length (number of elements) is <i>length</i>.
 The <i>indexer</i> procedure returns the <i>n</i>th element
 (where 0 &#x2264; <i>n</i> &lt; <i>length</i>)
-of the range given <i>n</i>.
+of the range, given <i>n</i>.
 This procedure must run in O(1) time.</p>
 
+<p>
+This SRFI recommends that the <em>indexer</em> procedure
+have a running time that is independent of the value of its argument.
+If it does not, the asymptotic guarantees of this SRFI's other procedures
+do not hold.</p>
 <p><code>(numeric-range</code>&nbsp;<em>start end</em> [<em>step</em>]<code>)</code></p>
 <p>Returns a numeric range, a special case of a range specified by an
 inclusive lower bound <em>start</em>, an exclusive upper bound <em>end</em>, and a
@@ -200,11 +199,16 @@ The size of the result is fixed once the size of <em>vector</em>
 has been excluded.  It is an error to mutate <em>vector</em>.</p>
 
 <p><code>(string-range</code> <em>string</em><code>)</code></p>
-<p>Returns a range whose elements are those of <em>string</em>. It is
-an error to mutate <em>string</em>.
+<p>Returns a range whose elements are those of <em>string</em>.
+It is an error to mutate <em>string</em>.
 This procedure must run in O(<em>n</em>) time,
 where <em>n</em> is the length of <em>string</em>.
 </p>
+<p>In a Scheme that provides O(1) access to strings,
+<code>range-ref</code> on a range created by <code>string-range</code>
+can simply call <code>string-ref</code>.
+But if only O(<em>n</em>) access is
+available, this procedure may return a vector-style range.
 
 <p><code>(range-append</code>&nbsp;<em>range</em> ...<code>)</code></p>
 <p>Returns a range whose elements are the elements of the <em>ranges</em>
