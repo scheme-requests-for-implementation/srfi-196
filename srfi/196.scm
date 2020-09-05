@@ -25,16 +25,27 @@
 ;; Find the least element of a list of naturals.
 (define (minimum ns) (reduce min 0 ns))
 
+(define (sum ns) (reduce + 0 ns))
+
 (define-record-type <range>
-  (raw-range start-index length indexer)
+  (raw-range start-index length indexer complexity)
   range?
   (start-index range-start-index)
   (length range-length)
-  (indexer range-indexer))
+  (indexer range-indexer)
+  (complexity range-complexity))
+
+;; Maximum number of indexers to compose with range-reverse and
+;; range-append before a range is expanded with vector-range.
+;; This may need adjustment.
+(define %range-maximum-complexity 16)
 
 ;; Returns an empty range which is otherwise identical to r.
 (define (%empty-range-from r)
-  (raw-range (range-start-index r) 0 (range-indexer r)))
+  (raw-range (range-start-index r) 0 (range-indexer r) (range-complexity r)))
+
+(define (threshold? k)
+  (> k %range-maximum-complexity))
 
 (define (%range-valid-index? r index)
   (and (exact-natural? index)
@@ -51,7 +62,7 @@
 (define (range length indexer)
   (assume (exact-natural? length))
   (assume (procedure? indexer))
-  (raw-range 0 length indexer))
+  (raw-range 0 length indexer 0))
 
 (define numeric-range
   (case-lambda
@@ -69,11 +80,11 @@
                            (> (+ start (* (- len 1) step)) end)))
                      (else #t))
                "numeric-range: invalid parameters")
-       (raw-range 0 len (lambda (n) (+ start (* n step))))))))
+       (raw-range 0 len (lambda (n) (+ start (* n step))) 0)))))
 
 (define (vector-range vec)
   (assume (vector? vec))
-  (raw-range 0 (vector-length vec) (lambda (i) (vector-ref vec i))))
+  (raw-range 0 (vector-length vec) (lambda (i) (vector-ref vec i)) 0))
 
 ;; This implementation assumes that string-ref is O(n), as would be
 ;; the case with UTF-8.  If an implementation has an O(1) string-ref,
@@ -84,6 +95,11 @@
 (define (string-range s)
   (assume (string? s))
   (vector-range (string->vector s)))
+
+(define (%range-maybe-vectorize r)
+  (if (threshold? (range-complexity r))
+      (vector-range (range->vector r))
+      r))
 
 ;;;; Accessors
 
@@ -140,10 +156,9 @@
   (cond ((= index 0) (values (%empty-range-from r) r))
         ((= index (range-length r)) (values r (%empty-range-from r)))
         (else
-         (values (raw-range (range-start-index r) index (range-indexer r))
-                 (raw-range index
-                            (- (range-length r) index)
-                            (range-indexer r))))))
+         (let ((indexer (range-indexer r)) (k (range-complexity r)))
+           (values (raw-range (range-start-index r) index indexer k)
+                   (raw-range index (- (range-length r) index) indexer k))))))
 
 (define (subrange r start end)
   (assume (range? r))
@@ -154,14 +169,18 @@
       r
       (raw-range (+ (range-start-index r) start)
                  (- end start)
-                 (range-indexer r))))
+                 (range-indexer r)
+                 (range-complexity r))))
 
 (define (range-take r count)
   (assume (range? r))
   (assume (%range-valid-bound? r count) "range-take: invalid count")
   (if (zero? count)
       (%empty-range-from r)
-      (raw-range (range-start-index r) count (range-indexer r))))
+      (raw-range (range-start-index r)
+                 count
+                 (range-indexer r)
+                 (range-complexity r))))
 
 (define (range-take-right r count)
   (assume (range? r))
@@ -171,7 +190,8 @@
       (%empty-range-from r)
       (raw-range (+ (range-start-index r) (- (range-length r) count))
                  count
-                 (range-indexer r))))
+                 (range-indexer r)
+                 (range-complexity r))))
 
 (define (range-drop r count)
   (assume (range? r))
@@ -180,7 +200,8 @@
       r
       (raw-range (+ (range-start-index r) count)
                  (- (range-length r) count)
-                 (range-indexer r))))
+                 (range-indexer r)
+                 (range-complexity r))))
 
 (define (range-drop-right r count)
   (assume (range? r))
@@ -189,7 +210,8 @@
       r
       (raw-range (range-start-index r)
                  (- (range-length r) count)
-                 (range-indexer r))))
+                 (range-indexer r)
+                 (range-complexity r))))
 
 (define (range-count pred r . rs)
   (assume (procedure? pred))
@@ -366,33 +388,39 @@
 
 (define (range-reverse r)
   (assume (range? r))
-  (raw-range (range-start-index r)
-             (range-length r)
-             (lambda (n)
-               ((range-indexer r) (- (range-length r) 1 n)))))
+  (%range-maybe-vectorize
+   (raw-range (range-start-index r)
+              (range-length r)
+              (lambda (n)
+                ((range-indexer r) (- (range-length r) 1 n)))
+              (+ 1 (range-complexity r)))))
 
 (define range-append
   (case-lambda
-    (() (raw-range 0 0 #f))
+    (() (raw-range 0 0 #f 0))
     ((r) r)                             ; one-range fast path
     ((ra rb)                            ; two-range fast path
      (let ((la (range-length ra))
            (lb (range-length rb)))
-       (raw-range 0
-                  (+ la lb)
-                  (lambda (i)
-                    (if (< i la)
-                        (%range-ref-no-check ra i)
-                        (%range-ref-no-check rb (- i la)))))))
+       (%range-maybe-vectorize          ; FIXME: should be lazy.
+        (raw-range 0
+                   (+ la lb)
+                   (lambda (i)
+                     (if (< i la)
+                         (%range-ref-no-check ra i)
+                         (%range-ref-no-check rb (- i la))))
+                   (+ 2 (range-complexity ra) (range-complexity rb))))))
     (rs                                 ; variadic path
      (let ((lens (map range-length rs)))
-       (raw-range 0
-                  (reduce + 0 lens)
-                  (lambda (i)
-                    (let lp ((i i) (rs rs) (lens lens))
-                      (if (< i (car lens))
-                          (%range-ref-no-check (car rs) i)
-                          (lp (- i (car lens)) (cdr rs) (cdr lens))))))))))
+       (%range-maybe-vectorize          ; FIXME: should be lazy.
+        (raw-range 0
+                   (sum lens)
+                   (lambda (i)
+                     (let lp ((i i) (rs rs) (lens lens))
+                       (if (< i (car lens))
+                           (%range-ref-no-check (car rs) i)
+                           (lp (- i (car lens)) (cdr rs) (cdr lens)))))
+                   (+ (length rs) (sum (map range-complexity rs)))))))))
 
 ;;;; Searching
 
@@ -436,22 +464,24 @@
                 (else (lp (- i 1))))))))
 
 (define (range-take-while pred r)
-  (let ((count (range-index (lambda (x) (not (pred x))) r)))
-    (if count (range-take r count) r)))
+  (cond ((range-index (lambda (x) (not (pred x))) r) =>
+         (lambda (i) (range-take r i)))
+        (else r)))
 
 (define (range-take-while-right pred r)
-  (let ((idx (range-index-right (lambda (x) (not (pred x))) r)))
-    (if idx (range-take-right r (- (range-length r) 1 idx)) r)))
+  (cond ((range-index-right (lambda (x) (not (pred x))) r) =>
+         (lambda (i) (range-take-right r (- (range-length r) 1 i))))
+        (else r)))
 
 (define (range-drop-while pred r)
-  (let ((count (range-index (lambda (x) (not (pred x))) r)))
-    (if count (range-drop r count) (%empty-range-from r))))
+  (cond ((range-index (lambda (x) (not (pred x))) r) =>
+         (lambda (i) (range-drop r i)))
+        (else (%empty-range-from r))))
 
 (define (range-drop-while-right pred r)
-  (let ((idx (range-index-right (lambda (x) (not (pred x))) r)))
-    (if idx
-        (range-drop-right r (- (range-length r) 1 idx))
-        (%empty-range-from r))))
+  (cond ((range-index-right (lambda (x) (not (pred x))) r) =>
+         (lambda (i) (range-drop-right r (- (range-length r) 1 i))))
+        (else (%empty-range-from r))))
 
 ;;;; Conversion
 
