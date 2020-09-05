@@ -35,7 +35,10 @@
   (indexer range-indexer)
   (complexity range-complexity))
 
-(define %range-maximum-complexity 8)
+;; Maximum number of indexers to compose with range-reverse and
+;; range-append before a range is expanded with vector-range.
+;; This may need adjustment.
+(define %range-maximum-complexity 16)
 
 ;; Returns an empty range which is otherwise identical to r.
 (define (%empty-range-from r)
