@@ -175,23 +175,24 @@
 (define (range-take r count)
   (assume (range? r))
   (assume (%range-valid-bound? r count) "range-take: invalid count")
-  (if (zero? count)
-      (%empty-range-from r)
-      (raw-range (range-start-index r)
-                 count
-                 (range-indexer r)
-                 (range-complexity r))))
+  (cond ((zero? count) (%empty-range-from r))
+        ((= count (range-length r)) r)
+        (else (raw-range (range-start-index r)
+                         count
+                         (range-indexer r)
+                         (range-complexity r)))))
 
 (define (range-take-right r count)
   (assume (range? r))
   (assume (%range-valid-bound? r count)
           "range-take-right: invalid count")
-  (if (zero? count)
-      (%empty-range-from r)
-      (raw-range (+ (range-start-index r) (- (range-length r) count))
-                 count
-                 (range-indexer r)
-                 (range-complexity r))))
+  (cond ((zero? count) (%empty-range-from r))
+        ((= count (range-length r)) r)
+        (else
+         (raw-range (+ (range-start-index r) (- (range-length r) count))
+                    count
+                    (range-indexer r)
+                    (range-complexity r)))))
 
 (define (range-drop r count)
   (assume (range? r))
