@@ -57,9 +57,9 @@ used for the iteration.  Indeed, it is so common that there is generally
 a standard syntax for providing it, generally involving the keyword
 <code>for</code> (or if not, as in Fortran and Lisp, the word
 <code>do</code>).  It is also usual to be able to provide a lower bound,
-generally defaulting to 0 or 1, as well as step size, allowing
-iterations through a sequence of odd numbers, or multiples of 10,
-or whatever.</p>
+(generally defaulting to 0 or 1) as well as a step (generally
+defaulting to 1) which allows iterations through a sequence of odd
+numbers, or multiples of 10, or whatever.</p>
 
 <p>Languages with higher order functions, however, provide a second
 approach to such loops: construct a sequence of numbers and apply
@@ -123,6 +123,16 @@ In the runtime guarantees below, the time spent
 in arguments designated by <var>pred</var>, <var>equal</var>,
 or <var>proc</var> is ignored.</p>
 
+<p>In addition, ranges come in two sizes: <dfn>compact ranges</dfn>,
+which are a small fixed size, and <dfn>expanded ranges</dfn>, whose
+size is asymptotically proportional to their length (number of elements).
+It is impossible to precisely characterize the size of a Scheme
+object due to widespread sharing of data, but an informal notion
+will serve for present purposes.  Unless otherwise noted, the
+procedures of this SRFI return compact ranges; however, if
+one or more arguments is an expanded range, the returned value
+may be an expanded range as well.</p>
+
 <p>This SRFI recommends, but does not require, that Scheme implementations
 which also provide <a href="https://srfi.schemers.org/srfi-42/srfi-42.html">SRFI 42</a>
 modify it so that the typed generator <code>:range</code> also accepts
@@ -159,9 +169,10 @@ arguments that do not have the type implied by the argument names.</p>
 <p>Returns a range whose length (number of elements) is <i>length</i>.
 The <i>indexer</i> procedure returns the <i>n</i>th element (where 0
 &#x2264; <i>n</i> &lt; <i>length</i>) of the range, given <i>n</i>.
-This procedure must run in O(1) time.  The size of the resulting range
-is asymptotically equal to the size of
-the <code><var>indexer</var></code>.  The average accessing time of
+This procedure must run in O(1) time.
+The range returned is compact, although the indexer may close over an
+arbitrarily large data structure.
+The average accessing time of
 the resulting range is the average time needed to
 run <code><var>indexer</var></code>.</p>
 
@@ -183,8 +194,7 @@ numbers.  This range produces the sequence</p>
 &gt; <em>end</em> if <em>step</em> is negative. It is is an error if an
 <em>n</em> satisfying this condition cannot be determined, or if
 <em>step</em> is numerically zero.  This procedure must run in O(1)
-time.  The size of the resulting range must be O(1).  The average
-accessing time of the resulting range must be O(1).</p>
+time.  The average accessing time of the resulting range must be O(1).</p>
 
 <p>Note that an effect of this definition is that the elements of a
 range over inexact numbers are enumerated by multiplying the index by
@@ -192,10 +202,9 @@ the step value rather than by adding the step value to itself
 repeatedly.  This reduces the likelihood of roundoff errors.</p>
 
 <p><code>(vector-range</code>&nbsp;<em>vector</em><code>)</code></p>
-<p>Returns a range whose elements are those of <em>vector</em>.  The
-procedure must run in O(1) time.  The size of the range is
-asymptotically equal to the size of
-the <code><var>vector</var></code>.  The average accessing time of the
+<p>Returns an expanded range whose elements are those of <em>vector</em>.  The
+procedure must run in O(1) time.
+The average accessing time of the
 resulting range must be O(1).  It is an error to
 mutate <em>vector</em>.</p>
 
@@ -203,24 +212,23 @@ mutate <em>vector</em>.</p>
 <p>Returns a range whose elements are those of <em>string</em>.  It is
 an error to mutate <em>string</em>.  This procedure must run in
 O(<em>n</em>) time, where <em>n</em> is the length of <em>string</em>.
-The size of the range is O(n).  The average accessing time of the
-resulting range must be O(1).  In a Scheme that guarantees O(1) random
-access to string, the procedure typically runs in O(1) time and the
-size of the range is asymptotically equal to the size
-of <code><var>string</var></code>.</p>
-
-<p><i>Note:</i> In a Scheme that provides O(1) access to strings,
+The average accessing time of the
+resulting range must be O(1).</p>
+<p>In a Scheme that guarantees O(1) random
+access to strings,
 <code>range-ref</code> on a range created by <code>string-range</code>
-can simply call <code>string-ref</code>.  But if only O(<em>n</em>)
-access is available, this procedure may interally have to copy the
-string into a vector.</p>
+can simply call <code>string-ref</code>, and the resulting range is compact.
+But if only O(<em>n</em>)
+access is available, this procedure may 
+have to copy the string's characters into a vector,
+resulting in an expanded range.</p>
 
 <p><code>(range-append</code>&nbsp;<em>range</em> ...<code>)</code></p>
-<p>Returns a range whose elements are the elements of
+<p>Returns an expanded range whose elements are the elements of
 the <em>ranges</em> in order.  This procedure must run in
 O(<em>n</em>) + O(<var>k</var>) time, where <em>n</em> is the total
 number of elements in all the ranges and <var>k</var> is the number of
-ranges.  The size of the resulting range must be O(n).  The average
+ranges.  The average
 accessing time of the resulting range is asymptotically bounded by
 maximum of the average accessing times of the <var>ranges</var>.
 </p>
@@ -236,7 +244,9 @@ This procedure must run in O(1) time.</p>
 <p>Returns <code>#t</code> if all the <em>ranges</em> are of the same
 length and if their corresponding values are the same in the sense of
 <em>equal</em>, and <code>#f</code> otherwise.
-</p>
+The runtime of this procedure is O(<em>s</em>) + O(<em>k</em>),
+where <em>s</em> is the sum of the total accessing times of the
+<var>ranges</var> and <em>k</em> is the number of <var>ranges</var>.</p>
 <h3 id="accessors">Accessors</h3>
 
 <p><code>(range-length</code>&nbsp;<em>range</em><code>)</code></p>
@@ -271,35 +281,33 @@ This procedure must run in O(1) time.</p>
 <p><code>(subrange</code>&nbsp;<em>range start end</em><code>)</code></p>
 <p>Returns a range which contains the elements of
 <i>range</i> from index <i>start</i>, inclusive, through index
-<i>end</i>, exclusive.  This procedure must run in O(1) time.  The
-size of the resulting range is asymptotically equal to the size
-of <code><var>range</var></code>.  The average accessing time of the
+<i>end</i>, exclusive.  This procedure must run in O(1) time.
+The average accessing time of the
 resulting range is asymptotically bounded by the average accessing
 time of <code><var>range</var></code>.</p>
 <p><code>(range-segment</code>&nbsp;<em>range k</em><code>)</code></p>
 <p>Returns a list of ranges representing the consecutive subranges of
 length <em>k</em>.  The last range is allowed to be shorter
-than <em>k</em>. The procedure must run in O(k) time.  The sizes of
-the resulting ranges and their average accessing times are
-asymptotically bounded by the size and the average accessing time
-respectively of <code><var>range</var></code>.</p>
+than <em>k</em>. The procedure must run in O(k) time.
+The average accessing time of the ranges is asymptotically bounded
+by the average accessing time of <code><var>range</var></code>.</p>
 
 <p><code>(range-take</code>&nbsp;<em>range count</em><code>)</code><br/>
 <code>(range-take-right</code>&nbsp;<em>range count</em><code>)</code></p>
 <p>Returns a range which contains the first/last <em>count</em> elements of
 <em>range</em>.
-These procedures must run in O(1) time. The sizes of
-the resulting ranges and their average accessing times are
-asymptotically bounded by the size and the average accessing time
-respectively of <code><var>range</var></code>.</p>
+
+average accessing time of the resulting ranges is
+asymptotically bounded by the average accessing time
+of <code><var>range</var></code>.</p>
 
 <p><code>(range-drop</code>&nbsp;<em>range count</em><code>)</code><br/>
 <code>(range-drop-right</code>&nbsp;<em>range count</em><code>)</code></p>
 <p>Returns a range which contains all except the first/last <em>count</em> elements
 of <em>range</em>.
-These procedures must run in O(1) time. The sizes of
-the resulting ranges and their average accessing times are
-asymptotically bounded by the size and the average accessing time
+These procedures must run in O(1) time.
+the average accessing time of the resulting ranges is
+asymptotically bounded by the average accessing time
 respectively of <code><var>range</var></code>.</p>
 
 <p><code>(range-count</code>&nbsp;<em>pred range1 range2</em> ...<code>)</code></p>
@@ -329,9 +337,9 @@ every application. Specifically it returns the last value returned by
 Otherwise, <code>#f</code> is returned. If more than one
 <em>range</em> is given and not all ranges have the same length,
 <em>range-every</em> terminates when the shortest range is exhausted.
-The runtime of this procedure is O(<em>s</em>) where <em>s</em> is the
-sum of the total accessing times of
-the <code><var>ranges</var></code>.</p>
+The runtime of this procedure is O(<em>s</em>) + O(<em>k</em>),
+where <em>s</em> is the sum of the total accessing times of the
+<var>ranges</var> and <em>k</em> is the number of <var>ranges</var>.</p>
 
 <p><code>(range-map</code>&nbsp;<em>proc range1 range2</em> ...<code>)</code><br/>
 <code>(range-map-&gt;list</code>&nbsp;<em>proc range1 range2</em> ...<code>)</code><br/>
@@ -346,9 +354,8 @@ procedures is O(<em>s</em>) where <em>s</em> is the sum of the total
 accessing times of the <code><var>ranges</var></code>.</p>
 
 <p>The <code>range-map</code> procedure eagerly computes its result
-and returns a specialized range that stores arbitrary elements.  As a
-result, its size is O(<em>n</em>) where <em>n</em> is the number of
-elements.  Its average accessing time is O(1).</p>
+and returns a specialized range that stores arbitrary elements.
+Its average accessing time is O(1).</p>
 
 <p><code>(range-for-each</code>&nbsp;<em>proc range1 range2</em> ...<code>)</code></p>
 <p>Applies <em>proc</em> element-wise to the elements of the
@@ -382,9 +389,8 @@ accessing times of the <code><var>ranges</var></code>.</p>
 
 <p>The <code>range-filter</code> and <code>range-remove</code>
 procedures eagerly compute their results and return specialized ranges
-that store arbitrary elements.  As a result, their size is
-asymptotically bounded by their number of elements.  Their average
-accessing time is O(1).</p>
+that store arbitrary elements.
+Their average accessing time is O(1).</p>
 
 <p><code>(range-fold</code>&nbsp;<em>kons nil range1 range2</em> ...<code>)</code><br/>
 <code>(range-fold-right</code>&nbsp;<em>kons nil range1 range2</em> ...<code>)</code></p>
@@ -421,20 +427,16 @@ the <code><var>ranges</var></code>.</p>
 <p>Returns a range containing the leading/trailing elements of <em>range</em> that satisfy
 <em>pred</em> up to the first/last one that does not.  The runtime of
 these procedures is asymptotically bounded by the total accessing time
-of the <code><var>range</var></code>.  The size of resulting range is
-O(<em>n</em>) where <em>n</em> the length
-of <code><var>range</var></code>.  The average accessing time of the
-resulting range is O(1).</p>
+of the <code><var>range</var></code>.
+The average accessing time of the resulting range is O(1).</p>
 
 <p><code>(range-drop-while pred</code>&nbsp;<em>range</em><code>)</code><br/>
 <code>(range-drop-while-right</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Returns a range that omits leading/trailing elements of <em>range</em> that satisfy
 <em>pred</em> until the first/last one that does not.  The runtime of
 these procedures is asymptotically bounded by the total accessing time
-of the <code><var>range</var></code>.  The size of resulting range is
-O(<em>n</em>) where <em>n</em> the length
-of <code><var>range</var></code>.  The average accessing time of the
-resulting range is O(1).</p>
+of the <code><var>range</var></code>.
+The average accessing time of the resulting range is O(1).</p>
 
 <h3 id="conversion">Conversion</h3>
 
