@@ -224,11 +224,11 @@ have to copy the string's characters into a vector,
 resulting in an expanded range.</p>
 
 <p><code>(range-append</code>&nbsp;<em>range</em> ...<code>)</code></p>
-<p>Returns an expanded range whose elements are the elements of
+<p>Returns a range whose elements are the elements of
 the <em>ranges</em> in order.  This procedure must run in
 O(<em>n</em>) + O(<var>k</var>) time, where <em>n</em> is the total
 number of elements in all the ranges and <var>k</var> is the number of
-ranges.  The average
+ranges.  The result is usually expanded but may be compact.  The average
 accessing time of the resulting range is asymptotically bounded by
 maximum of the average accessing times of the <var>ranges</var>.
 </p>
