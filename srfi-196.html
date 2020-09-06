@@ -351,10 +351,9 @@ have the same length, these procedures terminate when the shortest
 range is exhausted. The dynamic order in which <em>proc</em> is
 actually applied to the elements is unspecified.  The runtime of these
 procedures is O(<em>s</em>) where <em>s</em> is the sum of the total
-accessing times of the <code><var>ranges</var></code>.</p>
-
-<p>The <code>range-map</code> procedure eagerly computes its result
-and returns a specialized range that stores arbitrary elements.
+accessing times of the <code><var>ranges</var></code>.
+The <code>range-map</code> procedure eagerly computes its result
+and returns an expanded range.
 Its average accessing time is O(1).</p>
 
 <p><code>(range-for-each</code>&nbsp;<em>proc range1 range2</em> ...<code>)</code></p>
@@ -373,8 +372,10 @@ the <em>ranges</em> and returns a range/list of the true values
 returned by <em>proc</em>.  If more than one <em>range</em> is given
 and not all ranges have the same length, these procedures terminate
 when the shortest range is exhausted. The dynamic order in
-which <em>proc</em> is actually applied to the elements is
-unspecified. The runtime of these procedures is O(<em>n</em>)
+which <em>proc</em> is actually applied to the elements is unspecified.
+The <code>range-filter-map</code> procedure eagerly computes its result
+and returns an expanded range.
+The runtime of these procedures is O(<em>n</em>)
 where <em>n</em> is the sum of the total accessing times of
 the <code><var>ranges</var></code>.</p>
 
@@ -388,8 +389,7 @@ procedures is O(<em>s</em>) where <em>s</em> is the sum of the total
 accessing times of the <code><var>ranges</var></code>.</p>
 
 <p>The <code>range-filter</code> and <code>range-remove</code>
-procedures eagerly compute their results and return specialized ranges
-that store arbitrary elements.
+procedures eagerly compute their results and return expanded ranges.
 Their average accessing time is O(1).</p>
 
 <p><code>(range-fold</code>&nbsp;<em>kons nil range1 range2</em> ...<code>)</code><br/>
