@@ -123,15 +123,12 @@ In the runtime guarantees below, the time spent
 in arguments designated by <var>pred</var>, <var>equal</var>,
 or <var>proc</var> is ignored.</p>
 
-<p>In addition, ranges come in two sizes: <dfn>compact ranges</dfn>,
-which are a small fixed size, and <dfn>expanded ranges</dfn>, whose
-size is asymptotically proportional to their length (number of elements).
-It is impossible to precisely characterize the size of a Scheme
-object due to widespread sharing of data, but an informal notion
-will serve for present purposes.  Unless otherwise noted, the
-procedures of this SRFI return compact ranges; however, if
-one or more arguments is an expanded range, the returned value
-may be an expanded range as well.</p>
+<p>Unless otherwise noted, procedures in this SRFI that return
+ranges allocate at most O(1) new locations (see R[57]RS section 3.4
+for further information).  Such ranges are known as <dfn>compact
+ranges</dfn>.  Procedures marked as returning <dfn>expanded
+ranges</dfn> allocate at most O(<em>n</em>) locations, where
+<em>n</em> is the number of elements in the range.</p>
 
 <p>This SRFI recommends, but does not require, that Scheme implementations
 which also provide <a href="https://srfi.schemers.org/srfi-42/srfi-42.html">SRFI 42</a>
