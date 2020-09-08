@@ -189,7 +189,7 @@
                       (- e s)
                       (range-indexer r)
                       (range-complexity r)))))
-   (unfold (lambda (i) (>= i len))
+    (unfold (lambda (i) (>= i len))
             (lambda (i) (%subrange-no-check i (min len (+ i k))))
             (lambda (i) (+ i k))
             0)))
