@@ -311,7 +311,7 @@
   (assume (range? r))
   (if (null? rs)                        ; one-range fast path
       (vector-unfold (lambda (i) (proc (%range-ref-no-check r i)))
-		     (range-length r))
+                     (range-length r))
       (let ((rs* (cons r rs)))          ; variadic path
         (vector-unfold (lambda (i)
                          (apply proc (map (lambda (r)
