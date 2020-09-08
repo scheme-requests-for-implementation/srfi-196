@@ -1,7 +1,7 @@
 (define-library (srfi 196)
   (import (scheme base)
           (scheme case-lambda)
-          (only (srfi 1) reduce xcons every concatenate))
+          (only (srfi 1) reduce unfold xcons every concatenate))
 
   (cond-expand
     ((library (srfi 133))
@@ -30,6 +30,7 @@
           range-length range-ref
           range-first range-last
           subrange
+          range-segment
           range-split-at range-take range-take-right range-drop range-drop-right
           range-count range-map->list range-for-each range-fold range-fold-right
           range-any range-every

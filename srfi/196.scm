@@ -172,6 +172,21 @@
                  (range-indexer r)
                  (range-complexity r))))
 
+(define (range-segment r k)
+  (assume (range? r))
+  (assume (and (exact-integer? k) (positive? k)))
+  (let ((len (range-length r))
+        (%subrange-no-check
+         (lambda (s e)
+           (raw-range (+ (range-start-index r) s)
+                      (- e s)
+                      (range-indexer r)
+                      (range-complexity r)))))
+   (unfold (lambda (i) (>= i len))
+            (lambda (i) (%subrange-no-check i (min len (+ i k))))
+            (lambda (i) (+ i k))
+            0)))
+
 (define (range-take r count)
   (assume (range? r))
   (assume (%range-valid-bound? r count) "range-take: invalid count")
