@@ -29,8 +29,8 @@
    (lambda (return)
      (reduce (lambda (n s)
                (if (zero? n) (return n) (min n s)))
-             (car ns)
-             (cdr ns)))))
+             0
+             ns))))
 
 (define (sum ns) (reduce + 0 ns))
 
