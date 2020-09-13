@@ -22,8 +22,15 @@
 (define (exact-natural? x)
   (and (exact-integer? x) (not (negative? x))))
 
-;; Find the least element of a list of naturals.
-(define (minimum ns) (reduce min 0 ns))
+;; Find the least element of a list non-empty of naturals. If an element
+;; is zero, returns it immediately.
+(define (short-minimum ns)
+  (call-with-current-continuation
+   (lambda (return)
+     (reduce (lambda (n s)
+               (if (zero? n) (return n) (min n s)))
+             0
+             ns))))
 
 (define (sum ns) (reduce + 0 ns))
 
@@ -172,6 +179,21 @@
                  (range-indexer r)
                  (range-complexity r))))
 
+(define (range-segment r k)
+  (assume (range? r))
+  (assume (and (exact-integer? k) (positive? k)))
+  (let ((len (range-length r))
+        (%subrange-no-check
+         (lambda (s e)
+           (raw-range (+ (range-start-index r) s)
+                      (- e s)
+                      (range-indexer r)
+                      (range-complexity r)))))
+    (unfold (lambda (i) (>= i len))
+            (lambda (i) (%subrange-no-check i (min len (+ i k))))
+            (lambda (i) (+ i k))
+            0)))
+
 (define (range-take r count)
   (assume (range? r))
   (assume (%range-valid-bound? r count) "range-take: invalid count")
@@ -289,13 +311,13 @@
   (assume (range? r))
   (if (null? rs)                        ; one-range fast path
       (vector-unfold (lambda (i) (proc (%range-ref-no-check r i)))
-		     (range-length r))
+                     (range-length r))
       (let ((rs* (cons r rs)))          ; variadic path
         (vector-unfold (lambda (i)
                          (apply proc (map (lambda (r)
                                             (%range-ref-no-check r i))
                                           rs*)))
-                       (minimum (map range-length rs*))))))
+                       (short-minimum (map range-length rs*))))))
 
 (define (range-for-each proc r . rs)
   (assume (procedure? proc))
@@ -307,7 +329,7 @@
                 (else (proc (%range-ref-no-check r i))
                       (lp (+ i 1))))))
       (let* ((rs* (cons r rs))          ; variadic path
-             (len (minimum (map range-length rs*))))
+             (len (short-minimum (map range-length rs*))))
         (let lp ((i 0))
           (cond ((= i len) (if #f #f))
                 (else
@@ -332,7 +354,7 @@
     ((proc nil . rs)                    ; variadic path
      (assume (procedure? proc))
      (assume (pair? rs))
-     (let ((len (minimum (map range-length rs))))
+     (let ((len (short-minimum (map range-length rs))))
        (let lp ((i 0) (acc nil))
          (if (= i len)
              acc
@@ -357,7 +379,7 @@
     ((proc nil . rs)                    ; variadic path
      (assume (procedure? proc))
      (assume (pair? rs))
-     (let ((len (minimum (map range-length rs))))
+     (let ((len (short-minimum (map range-length rs))))
        (let rec ((i 0))
          (if (= i len)
              nil
@@ -435,7 +457,7 @@
                 ((pred (%range-ref-no-check r i)) i)
                 (else (lp (+ i 1))))))
       (let* ((rs* (cons r rs))          ; variadic path
-             (len (minimum (map range-length rs*))))
+             (len (short-minimum (map range-length rs*))))
         (let lp ((i 0))
           (cond ((= i len) #f)
                 ((apply pred

@@ -268,6 +268,21 @@
   (check (range->list (range-drop-right test-num-range 15))
    => (take test-num-seq 5))
 
+  (check (range=/eqv? (car (range-segment test-num-range 5))
+                      (range-take test-num-range 5))
+   => #t)
+  (check (range=/eqv? (apply range-append
+                             (cdr (range-segment test-num-range 5)))
+                      (range-drop test-num-range 5))
+   => #t)
+  (check (range=/eqv? (apply range-append (range-segment test-num-range 5))
+                      test-num-range)
+   => #t)
+  (check (fold + 0 (map range-length (range-segment test-num-range 5)))
+   => (range-length test-num-range))
+  (check (fold + 0 (map range-length (range-segment test-num-range 7)))
+   => (range-length test-num-range))
+
   (check (range-count always test-num-range) => (range-length test-num-range))
   (check (range-count never test-num-range)  => 0)
   (check (range-count even? test-num-range)  => (count even? test-num-seq))
