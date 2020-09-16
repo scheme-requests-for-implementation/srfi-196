@@ -64,7 +64,7 @@ numbers, or multiples of 10, or whatever.</p>
 
 <p>Languages with higher order functions, however, provide a second
 approach to such loops: construct a sequence of numbers and apply
-a function to each element of the sequence.  SRFI 1's <code>iota</code>
+a function to each element of the sequence.  <a href="https://srfi.schemers.org/srfi-1/srfi-1.html">SRFI 1</a>'s <code>iota</code>
 and the standard <code>for-each</code> procedures make this easy:
 <code>(for-each (lambda (i) ...) (iota 0 10))</code>
 will execute the expressions represented as <code>...</code>
@@ -106,7 +106,7 @@ The geometric sequence 1, 1/2, 1/4, &hellip;, 1/512 can be expressed by
 <p>The rationale for <code>string-range</code> is to provide efficient
 random access to strings.  There have been many attempts to ensure
 O(1) reference to string characters, such as string cursors, UTF-32
-encoding, SRFI 135 texts, immutable strings, and so on.  Because
+encoding, <a href="https://srfi.schemers.org/srfi-135/srfi-135.html">SRFI 135</a> texts, immutable strings, and so on.  Because
 the <code>range-ref</code> procedure for a string created
 through <code>string-range</code> runs in O(1) time in the length of
 the string, a range created by <code>string-range</code> can
@@ -463,19 +463,21 @@ Otherwise, this procedure is equivalent
 to <code>vector-range</code>.</p>
 
 <p><code>(range-&gt;generator</code>&nbsp;<em>range</em><code>)</code></p>
-<p>Returns a SRFI 158 generator that generates the elements
+<p>Returns a <a href="https://srfi.schemers.org/srfi-158/srfi-158.html">SRFI 158</a> generator that generates the elements
 of <em>range</em> in order.  This procedure must run in O(1) time, and
 the running time of each call of the generator is asymptotically
 bounded by the average accessing time of <code><var>range</var></code>.
 
 <h2>Implementation</h2>
 
-<p>The sample implementation is in the repository of this SRFI.
+<p>The sample implementation is in <a href="https://github.com/scheme-requests-for-implementation/srfi-196">the
+  repository</a> of this SRFI and in <a href="https://srfi.schemers.org/srfi-196/srfi-196.tgz">this
+  .tgz file</a>.
 An R7RS library file and a separate file containing the actual
 implementation are provided, along with a test file that
-works with SRFI 78, but is self-contained if SRFI 78 does not exist.
+works with <a href="https://srfi.schemers.org/srfi-78/srfi-78.html">SRFI 78</a>, but is self-contained if SRFI 78 does not exist.
 The implementation uses SRFI 1 and can take
-advantage of SRFI 145 (<code>assume</code>) if it is present.</p>
+advantage of <a href="https://srfi.schemers.org/srfi-145/srfi-145.html">SRFI 145</a> (<code>assume</code>) if it is present.</p>
 
 
 <h2>Acknowledgements</h2>
