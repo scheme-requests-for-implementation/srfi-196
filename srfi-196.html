@@ -161,6 +161,9 @@ arbitrarily large data structures.
 The average accessing time of
 the resulting range is the average time needed to
 run <code><var>indexer</var></code>.</p>
+
+<p>Examples:</p>
+
 <pre class="example"><code>(range-&gt;list (range 26 (lambda (n) (integer-&gt;char (+ 65 n)))))
   &rArr; (#\A #\B #\C #\D #\E &hellip; #\Z)
 
