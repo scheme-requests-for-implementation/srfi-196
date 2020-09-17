@@ -6,6 +6,7 @@
     <link href="/favicon.png" rel="icon" sizes="192x192" type="image/png">
     <link rel="stylesheet" href="https://srfi.schemers.org/srfi.css" type="text/css">
     <meta name="viewport" content="width=device-width, initial-scale=1"></head>
+    <style>pre.example { margin-left: 2em; }</style>
 
   <body>
     <h1><a href="https://srfi.schemers.org/"><img class="srfi-logo" src="https://srfi.schemers.org/srfi-logo.svg" alt="SRFI logo" /></a>196: Range Objects</h1>
@@ -88,19 +89,7 @@ specifies the sequence 0.0, 0.1, ... 0.9,
 at least when inexact numbers are represented
 as IEEE 754 binary double floats (as is usually the case).
 Roundoff error is still possible when multiplying, but it is
-greatly reduced compared to accumulated error by repeated adding.
-</p>
-<p>Two more examples:
-</p>
-<ul>
-<li>The basic Latin capital letters A-Z can be specified using
-a range constructed by <code>(range 26
-(lambda (n) (integer->char (+ 65 n))))</code>.
-</li>
-<li>
-The geometric sequence 1, 1/2, 1/4, &hellip;, 1/512 can be expressed by
-<code>(range 10 (lambda (n) (expt 1/2 n)))</code>.
-</li></ul>
+greatly reduced compared to accumulated error by repeated adding.</p>
 
 <p>The rationale for <code>string-range</code> is to provide efficient
 random access to strings.  There have been many attempts to ensure
@@ -172,6 +161,12 @@ arbitrarily large data structures.
 The average accessing time of
 the resulting range is the average time needed to
 run <code><var>indexer</var></code>.</p>
+<pre class="example"><code>(range-&gt;list (range 26 (lambda (n) (integer-&gt;char (+ 65 n)))))
+  &rArr; (#\A #\B #\C #\D #\E &hellip; #\Z)
+
+(range-&gt;list (range 10 (lambda (n) (expt 1/2 n))))
+  &rArr; (1 1/2 1/4 &hellip; 1/512)
+</code></pre>
 
 <p><code>(numeric-range</code>&nbsp;<em>start end</em> [<em>step</em>]<code>)</code></p>
 <p>Returns a numeric range, a special case of a range specified by an
@@ -197,6 +192,10 @@ time.  The average accessing time of the resulting range must be O(1).</p>
 range over inexact numbers are enumerated by multiplying the index by
 the step value rather than by adding the step value to itself
 repeatedly.  This reduces the likelihood of roundoff errors.</p>
+<pre class="example"><code>(range-&gt;list (numeric-range 0 1 0.01))
+  &rArr; (0 0.01 0.02 ... 0.99)<br/>
+(range-&gt;list (numeric-range 5 -5 -3)) &rArr; (5 2 -1 -4)
+</code></pre>
 
 <p><code>(vector-range</code>&nbsp;<em>vector</em><code>)</code></p>
 <p>Returns an expanded range whose elements are those of <em>vector</em>.  The
@@ -204,6 +203,9 @@ procedure must run in O(1) time.
 The average accessing time of the
 resulting range must be O(1).  It is an error to
 mutate <em>vector</em>.</p>
+<pre class="example"><code>(range-&gt;list (vector-range #(1 3 5 7 9)))
+  &rArr; (1 3 5 7 9)
+</code></pre>
 
 <p><code>(string-range</code> <em>string</em><code>)</code></p>
 <p>Returns a range whose elements are those of <em>string</em>.  It is
@@ -219,6 +221,9 @@ But if only O(<em>n</em>)
 access is available, this procedure may 
 have to copy the string's characters into a vector,
 resulting in an expanded range.</p>
+<pre class="example"><code>(range-&gt;list (string-range "abcde"))
+  &rArr; (#\a #\b #\c #\d #\e)
+</code></pre>
 
 <p><code>(range-append</code>&nbsp;<em>range</em> ...<code>)</code></p>
 <p>Returns a range whose elements are the elements of
@@ -229,6 +234,10 @@ ranges.  The result is usually expanded but may be compact.  The average
 accessing time of the resulting range is asymptotically bounded by
 maximum of the average accessing times of the <var>ranges</var>.
 </p>
+<pre class="example"><code>(range-&gt;list (range-append (numeric-range 0 3)
+                           (numeric-range 3 6)))
+  &rArr; (0 1 2 3 4 5 6)
+</code></pre>
 
 <h3 id="predicates">Predicates</h3>
 
@@ -244,11 +253,20 @@ length and if their corresponding values are the same in the sense of
 The runtime of this procedure is O(<em>s</em>) + O(<em>k</em>),
 where <em>s</em> is the sum of the total accessing times of the
 <var>ranges</var> and <em>k</em> is the number of <var>ranges</var>.</p>
+<pre class="example"><code>(range=? = (numeric-range 10 30) (numeric-range 10 30)) &rArr; #t
+
+(range=? = (numeric-range 5 10) (numeric-range 6 11)) &rArr; #f
+
+(range=? eqv? (numeric-range 0 0) (range 0 (lambda (i) i))) &rArr; #t
+</code></pre>
+
 <h3 id="accessors">Accessors</h3>
 
 <p><code>(range-length</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns the length (number of elements) of <em>range</em>.
 This procedure must run in O(1) time.</p>
+<pre class="example"><code>(range-length (numeric-range 10 30)) &rArr; 20
+</code></pre>
 
 <p><code>(range-ref</code>&nbsp;<em>range n</em><code>)</code></p>
 <p>Returns the <em>n</em>th element of <em>range</em>. It is an error if
@@ -256,15 +274,22 @@ This procedure must run in O(1) time.</p>
 <em>range</em>.  The running time of this procedure must be
 asymptotically equal to the average accessing time
 of <code><var>range</var></code>.</p>
+<pre class="example"><code>(range-ref (numeric-range 10 30) 5) &rArr; 15
+(range-ref (range 2 (lambda (i) (not (zero? i)))) 1) &rArr; #t
+</code></pre>
 
 <p><code>(range-first</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Equivalent (in running time as well)
 to <code>(range-ref</code>&nbsp;<em>range</em> 0)<code></code>.</p>
+<pre class="example"><code>(range-first (numeric-range 10 30)) &rArr; 10
+</code></pre>
 
 <p><code>(range-last</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Equivalent (in running time as well)
 to <code>(range-ref</code>&nbsp;<em>range</em> <code>(-
 (range-length</code>&nbsp;<em>range</em><code>) 1))</code>.</p>
+<pre class="example"><code>(range-last (numeric-range 10 30)) &rArr; 29
+</code></pre>
 
 <h3 id="iteration">Iteration</h3>
 
@@ -275,6 +300,12 @@ to <code>(range-ref</code>&nbsp;<em>range</em> <code>(-
 It is an error if <em>index</em> is not an exact integer
 between 0 and the length of <em>range</em>, both inclusive.
 This procedure must run in O(1) time.</p>
+<pre class="example"><code>(let-values (((ra rb) (range-split-at (numeric-range 10 20) 5)))
+  (values (range-&gt;list ra) (range-&gt;list rb)))
+    &rArr; (10 11 12 13 14)
+      (15 16 17 18 19)
+</code></pre>
+
 <p><code>(subrange</code>&nbsp;<em>range start end</em><code>)</code></p>
 <p>Returns a range which contains the elements of
 <i>range</i> from index <i>start</i>, inclusive, through index
@@ -282,12 +313,25 @@ This procedure must run in O(1) time.</p>
 The average accessing time of the
 resulting range is asymptotically bounded by the average accessing
 time of <code><var>range</var></code>.</p>
+<pre class="example"><code>(range-&gt;list (subrange (numeric-range 5 6 0.1) 5 8))
+  ⇒ (5.5 5.6 5.7)
+
+(range-&gt;list (subrange (string-range "abcdefghij") 2 8))
+  ⇒ (#\c #\d #\e #\f #\g #\h)
+</code></pre>
+
 <p><code>(range-segment</code>&nbsp;<em>range k</em><code>)</code></p>
 <p>Returns a list of ranges representing the consecutive subranges of
 length <em>k</em>.  The last range is allowed to be shorter
 than <em>k</em>. The procedure must run in O(k) time.
 The average accessing time of the ranges is asymptotically bounded
 by the average accessing time of <code><var>range</var></code>.</p>
+<pre class="example"><code>(map range-&gt;list (range-segment (numeric-range 0 12) 4))
+  ⇒ ((0 1 2 3) (4 5 6 7) (8 9 10 11))
+
+(map range-&gt;list (range-segment (numeric-range 1 2 0.2) 3))
+  ⇒ ((1 1.2 1.4) (1.6 1.8))
+</code></pre>
 
 <p><code>(range-take</code>&nbsp;<em>range count</em><code>)</code><br/>
 <code>(range-take-right</code>&nbsp;<em>range count</em><code>)</code></p>
@@ -297,6 +341,12 @@ by the average accessing time of <code><var>range</var></code>.</p>
 average accessing time of the resulting ranges is
 asymptotically bounded by the average accessing time
 of <code><var>range</var></code>.</p>
+<pre class="example"><code>(range-&gt;list (range-take (numeric-range 0 10) 5))
+  ⇒ (0 1 2 3 4)
+
+(range-&gt;list (range-take-right (numeric-range 0 10) 5))
+  ⇒ (5 6 7 8 9)
+</code></pre>
 
 <p><code>(range-drop</code>&nbsp;<em>range count</em><code>)</code><br/>
 <code>(range-drop-right</code>&nbsp;<em>range count</em><code>)</code></p>
@@ -306,6 +356,12 @@ These procedures must run in O(1) time.
 the average accessing time of the resulting ranges is
 asymptotically bounded by the average accessing time
 respectively of <code><var>range</var></code>.</p>
+<pre class="example"><code>(range-&gt;list (range-drop (numeric-range 0 10) 5))
+  ⇒ (5 6 7 8 9)
+
+(range-&gt;list (range-drop-right (numeric-range 0 10) 5))
+  ⇒ (0 1 2 3 4)
+</code></pre>
 
 <p><code>(range-count</code>&nbsp;<em>pred range1 range2</em> ...<code>)</code></p>
 <p>Applies <em>pred</em> element-wise to the elements of
