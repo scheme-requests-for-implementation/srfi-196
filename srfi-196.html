@@ -371,6 +371,11 @@ ranges have the same length, <em>range-count</em> terminates when the
 shortest range is exhausted.  The runtime of this procedure is
 O(<em>s</em>) where <em>s</em> is the sum of the total accessing times
 of the <code><var>ranges</var></code>.</p>
+<pre class="example"><code>(range-count even? (numeric-range 0 10)) &rArr; 5
+
+(range-count &lt; (numeric-range 0 10 2) (numeric-range 5 15)) &rArr; 5
+</code></pre>
+
 <p><code>(range-any</code>&nbsp;<em>pred range1 range2</em> ...<code>)</code></p>
 <p>Applies <em>pred</em> element-wise to the elements of the
 <em>ranges</em> and returns true if <em>pred</em> returns true on any
@@ -381,6 +386,12 @@ one <em>range</em> is given and not all ranges have the same length,
 The runtime of this procedure is O(<em>s</em>) where <em>s</em> is the
 sum of the total accessing times of
 the <code><var>ranges</var></code>.</p>
+<pre class="example"><code>(range-any odd? (numeric-range 0 10)) &rArr; #t
+
+(range-any odd? (numeric-range 0 10 2)) &rArr; #f
+
+(range-any &lt; (numeric-range 0 10 2) (numeric-range 5 15)) &rArr; #t
+</code></pre>
 
 <p><code>(range-every</code>&nbsp;<em>pred range</em><code>)</code></p>
 <p>Applies <em>pred</em> element-wise to the elements of the
@@ -393,6 +404,12 @@ Otherwise, <code>#f</code> is returned. If more than one
 The runtime of this procedure is O(<em>s</em>) + O(<em>k</em>),
 where <em>s</em> is the sum of the total accessing times of the
 <var>ranges</var> and <em>k</em> is the number of <var>ranges</var>.</p>
+<pre class="example"><code>(range-every integer? (numeric-range 0 10)) &rArr; #t
+
+(range-every odd? (numeric-range 0 10)) &rArr; #f
+
+(range-every &lt; (numeric-range 0 10 2) (numeric-range 5 15)) &rArr; #f
+</code></pre>
 
 <p><code>(range-map</code>&nbsp;<em>proc range1 range2</em> ...<code>)</code><br/>
 <code>(range-map-&gt;list</code>&nbsp;<em>proc range1 range2</em> ...<code>)</code><br/>
@@ -408,6 +425,15 @@ accessing times of the <code><var>ranges</var></code>.
 The <code>range-map</code> procedure eagerly computes its result
 and returns an expanded range.
 Its average accessing time is O(1).</p>
+<pre class="example"><code>(range-&gt;list (range-map square (numeric-range 5 10))) &rArr; (25 36 49 64 81)
+
+(range-&gt;list (range-map + (numeric-range 0 5) (numeric-range 5 10)))
+  &rArr; (5 7 9 11 13)
+
+(range-map-&gt;list square (numeric-range 5 10)) &rArr; (25 36 49 64 81)
+
+(range-map-&gt;vector square (numeric-range 5 10)) &rArr; #(25 36 49 64 81)
+</code></pre>
 
 <p><code>(range-for-each</code>&nbsp;<em>proc range1 range2</em> ...<code>)</code></p>
 <p>Applies <em>proc</em> element-wise to the elements of the
@@ -417,6 +443,11 @@ length, <em>range-for-each</em> terminates when the shortest range is
 exhausted.  The runtime of this procedure is O(<em>s</em>)
 where <em>s</em> is the sum of the total accessing times of
 the <code><var>ranges</var></code>.</p>
+<pre class="example"><code>(let ((vec (make-vector 5)))
+  (range-for-each (lambda (i) (vector-set! vec i (* i i)))
+                  (numeric-range 0 5))
+  vec) &rArr; #(0 1 2 3 4)
+</code></pre>
 
 <p><code>(range-filter-map</code> <em>proc range1 range2</em> ...<code>)</code><br/>
 <code>(range-filter-map-&gt;list</code> <em>proc range1 range2</em> ...<code>)</code></p>
@@ -431,6 +462,16 @@ and returns an expanded range.
 The runtime of these procedures is O(<em>n</em>)
 where <em>n</em> is the sum of the total accessing times of
 the <code><var>ranges</var></code>.</p>
+<pre class="example"><code>(range-&gt;list (range-filter-map (lambda (x) (and (even? x) (* x x)))
+                               (numeric-range 0 10)))
+  &rArr; (0 4 16 36 64)
+
+(range-filter-map-&gt;list (lambda (x y)
+                          (and (&lt; x y) (* x y)))
+                        (numeric-range 0 10 2)
+                        (numeric-range 5 15))
+  &rArr; (0 12 28 48 72)
+</code></pre>
 
 <p><code>(range-filter</code>&nbsp;<em>pred range</em><code>)</code><br/>
 <code>(range-filter-&gt;list</code>&nbsp;<em>pred range</em><code>)</code><br/>
@@ -444,6 +485,18 @@ accessing times of the <code><var>ranges</var></code>.</p>
 <p>The <code>range-filter</code> and <code>range-remove</code>
 procedures eagerly compute their results and return expanded ranges.
 Their average accessing time is O(1).</p>
+<pre class="example"><code>(range-&gt;list (range-filter even? (numeric-range 0 10)))
+  &rArr; (0 2 4 6 8)
+
+(range-filter-&gt;list odd? (numeric-range 0 10))
+  &rArr; (1 3 5 7 9)
+
+(range-&gt;list (range-remove even? (numeric-range 0 10)))
+  &rArr; (1 3 5 7 9)
+
+(range-remove-&gt;list odd? (numeric-range 0 10))
+  &rArr; (0 2 4 6 8)
+</code></pre>
 
 <p><code>(range-fold</code>&nbsp;<em>kons nil range1 range2</em> ...<code>)</code><br/>
 <code>(range-fold-right</code>&nbsp;<em>kons nil range1 range2</em> ...<code>)</code></p>
@@ -460,6 +513,21 @@ and not all ranges have the same length, these procedures terminate
 when the shortest range is exhausted.  The runtime of these procedures
 must be O(<em>s</em>) where <em>s</em> is the sum of the total
 accessing times of the <code><var>ranges</var></code>.</p>
+<pre class="example"><code>(range-fold (lambda (n _) (+ 1 n)) 0 (numeric-range 0 30))
+  &rArr; 30
+
+(range-fold + 0 (numeric-range 0 100) (numeric-range 50 70))
+  &rArr; 1380
+
+(range-fold-right xcons '() (numeric-range 0 10))
+  &rArr; (0 1 2 3 4 5 6 7 8 9)
+
+(range-fold-right (lambda (lis x y) (cons (+ x y) lis))
+                  '()
+                  (numeric-range 3 6)
+                  (numeric-range 5 12))
+  &rArr; (8 10 12)
+</code></pre>
 
 <h3 id="searching">Searching</h3>
 
