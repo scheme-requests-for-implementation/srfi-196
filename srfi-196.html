@@ -242,7 +242,7 @@ maximum of the average accessing times of the <var>ranges</var>.
 </p>
 <pre class="example"><code>(range-&gt;list (range-append (numeric-range 0 3)
                            (numeric-range 3 6)))
-  &rArr; (0 1 2 3 4 5 6)
+  &rArr; (0 1 2 3 4 5)
 </code></pre>
 
 <h3 id="predicates">Predicates</h3>
@@ -453,7 +453,7 @@ the <code><var>ranges</var></code>.</p>
 <pre class="example"><code>(let ((vec (make-vector 5)))
   (range-for-each (lambda (i) (vector-set! vec i (* i i)))
                   (numeric-range 0 5))
-  vec) &rArr; #(0 1 2 3 4)
+  vec) &rArr; #(0 1 4 9 16)
 </code></pre>
 
 <p><code>(range-filter-map</code> <em>proc range1 range2</em> ...<code>)</code><br/>
@@ -569,7 +569,7 @@ The average accessing time of the resulting range is O(1).</p>
                                (numeric-range 5 15)))
   &rArr; (5 6 7 8 9)
 
-(range-&gt;list (range-take-while-right (lambda (x) (&gt; x 10)
+(range-&gt;list (range-take-while-right (lambda (x) (&gt; x 10))
                                      (numeric-range 5 15)))
   &rArr; (11 12 13 14)
 </code></pre>
@@ -585,7 +585,7 @@ The average accessing time of the resulting range is O(1).</p>
                                (numeric-range 5 15)))
   &rArr; (10 11 12 13 14)
 
-(range-&gt;list (range-drop-while-right (lambda (x) (&gt; x 10)
+(range-&gt;list (range-drop-while-right (lambda (x) (&gt; x 10))
                                      (numeric-range 5 15)))
   &rArr; (5 6 7 8 9 10)
 </code></pre>
