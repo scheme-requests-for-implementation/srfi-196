@@ -314,10 +314,10 @@ The average accessing time of the
 resulting range is asymptotically bounded by the average accessing
 time of <code><var>range</var></code>.</p>
 <pre class="example"><code>(range-&gt;list (subrange (numeric-range 5 6 0.1) 5 8))
-  ⇒ (5.5 5.6 5.7)
+  &rArr; (5.5 5.6 5.7)
 
 (range-&gt;list (subrange (string-range "abcdefghij") 2 8))
-  ⇒ (#\c #\d #\e #\f #\g #\h)
+  &rArr; (#\c #\d #\e #\f #\g #\h)
 </code></pre>
 
 <p><code>(range-segment</code>&nbsp;<em>range k</em><code>)</code></p>
@@ -327,10 +327,10 @@ than <em>k</em>. The procedure must run in O(k) time.
 The average accessing time of the ranges is asymptotically bounded
 by the average accessing time of <code><var>range</var></code>.</p>
 <pre class="example"><code>(map range-&gt;list (range-segment (numeric-range 0 12) 4))
-  ⇒ ((0 1 2 3) (4 5 6 7) (8 9 10 11))
+  &rArr; ((0 1 2 3) (4 5 6 7) (8 9 10 11))
 
 (map range-&gt;list (range-segment (numeric-range 1 2 0.2) 3))
-  ⇒ ((1 1.2 1.4) (1.6 1.8))
+  &rArr; ((1 1.2 1.4) (1.6 1.8))
 </code></pre>
 
 <p><code>(range-take</code>&nbsp;<em>range count</em><code>)</code><br/>
@@ -342,10 +342,10 @@ average accessing time of the resulting ranges is
 asymptotically bounded by the average accessing time
 of <code><var>range</var></code>.</p>
 <pre class="example"><code>(range-&gt;list (range-take (numeric-range 0 10) 5))
-  ⇒ (0 1 2 3 4)
+  &rArr; (0 1 2 3 4)
 
 (range-&gt;list (range-take-right (numeric-range 0 10) 5))
-  ⇒ (5 6 7 8 9)
+  &rArr; (5 6 7 8 9)
 </code></pre>
 
 <p><code>(range-drop</code>&nbsp;<em>range count</em><code>)</code><br/>
@@ -357,10 +357,10 @@ the average accessing time of the resulting ranges is
 asymptotically bounded by the average accessing time
 respectively of <code><var>range</var></code>.</p>
 <pre class="example"><code>(range-&gt;list (range-drop (numeric-range 0 10) 5))
-  ⇒ (5 6 7 8 9)
+  &rArr; (5 6 7 8 9)
 
 (range-&gt;list (range-drop-right (numeric-range 0 10) 5))
-  ⇒ (0 1 2 3 4)
+  &rArr; (0 1 2 3 4)
 </code></pre>
 
 <p><code>(range-count</code>&nbsp;<em>pred range1 range2</em> ...<code>)</code></p>
