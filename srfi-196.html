@@ -171,7 +171,7 @@ run <code><var>indexer</var></code>.</p>
 <p>Returns a numeric range, a special case of a range specified by an
 inclusive lower bound <em>start</em>, an exclusive upper bound <em>end</em>, and a
 <em>step</em> value (default 1), all of which can be exact or inexact real
-numbers.  This range produces the sequence</p>
+numbers.  This constructor produces the sequence</p>
 <blockquote>
 <em>start</em><code>, (+&nbsp;</code><em>start&nbsp;step</em><code>),
 (+&nbsp;</code><em>start</em><code>&nbsp;(* 2 </code><em>step</em><code>)),
@@ -191,10 +191,30 @@ time.  The average accessing time of the resulting range must be O(1).</p>
 range over inexact numbers are enumerated by multiplying the index by
 the step value rather than by adding the step value to itself
 repeatedly.  This reduces the likelihood of roundoff errors.</p>
-<pre class="example"><code>(range-&gt;list (numeric-range 0 1 0.01))
-  &rArr; (0 0.01 0.02 ... 0.99)<br/>
+<pre class="example"><code>(range-&gt;list (numeric-range 0 1 1/10))
+  &rArr; (0 1/10 1/5 3/10 2/5 1/2 3/5 7/10 4/5 9/10)<br/>
 (range-&gt;list (numeric-range 5 -5 -3)) &rArr; (5 2 -1 -4)
 </code></pre>
+
+<p><code>(iota-range</code>&nbsp;<em>length</em> [<em>start</em> [<em>step</em>]]<code>)</code></p>
+<p>Returns an iota-numeric range, a special case of a range specified by
+a length (a non-negative exact integer) as well as an
+inclusive lower bound <em>start</em> (default 0) and a
+<em>step</em> value (default 1), both of which can be exact or inexact real
+numbers.  This constructor produces the sequence</p>
+<blockquote>
+<em>start</em><code>, (+&nbsp;</code><em>start&nbsp;step</em><code>),
+(+&nbsp;</code><em>start</em><code>&nbsp;(* 2 </code><em>step</em><code>)),
+&hellip;, (+&nbsp;</code><em>start</em><code>
+(*&nbsp;</code><em>length step</em><code>))</code>,
+</blockquote>
+This procedure must run in O(1)
+time.  The average accessing time of the resulting range must be O(1).</p>
+
+<p>Note that an effect of this definition is that the elements of a
+range over inexact numbers are enumerated by multiplying the index by
+the step value rather than by adding the step value to itself
+repeatedly.  This reduces the likelihood of roundoff errors.</p>
 
 <p><code>(vector-range</code>&nbsp;<em>vector</em><code>)</code></p>
 <p>Returns a range whose elements are those of <em>vector</em>.  The
@@ -312,8 +332,8 @@ This procedure must run in O(1) time.</p>
 The average accessing time of the
 resulting range is asymptotically bounded by the average accessing
 time of <code><var>range</var></code>.</p>
-<pre class="example"><code>(range-&gt;list (subrange (numeric-range 5 6 0.1) 5 8))
-  &rArr; (5.5 5.6 5.7)
+<pre class="example"><code>(range-&gt;list (subrange (numeric-range 5 15) 5 8))
+  &rArr; (10 11 12)
 
 (range-&gt;list (subrange (string-range "abcdefghij") 2 8))
   &rArr; (#\c #\d #\e #\f #\g #\h)
@@ -329,8 +349,8 @@ by the average accessing time of <code><var>range</var></code>.</p>
 <pre class="example"><code>(map range-&gt;list (range-segment (numeric-range 0 12) 4))
   &rArr; ((0 1 2 3) (4 5 6 7) (8 9 10 11))
 
-(map range-&gt;list (range-segment (numeric-range 1 2 0.2) 3))
-  &rArr; ((1 1.2 1.4) (1.6 1.8))
+(map range-&gt;list (range-segment (numeric-range 0 2 1/3) 4))
+  &rArr; ((0 1/3 2/3 1) (4/3 5/3))
 </code></pre>
 
 <p><code>(range-take</code>&nbsp;<em>range count</em><code>)</code><br/>
