@@ -200,6 +200,32 @@ range over inexact numbers are enumerated by multiplying the index by
 the step value rather than by adding the step value to itself
 repeatedly.  This reduces the likelihood of roundoff errors.</p>
 
+<p><code>(iota-range</code>&nbsp;<em>length</em> [<em>start [<em>step</em>]]<code>)</code></p>
+<p>Returns a numeric range, a special case of a range specified by a
+length, an
+inclusive lower bound <em>start</em> (default 0),  and a
+<em>step</em> value (default 1), all of which can be exact or inexact real
+numbers.
+<blockquote>
+<em>start</em><code>, (+&nbsp;</code><em>start&nbsp;step</em><code>),
+(+&nbsp;</code><em>start</em><code>&nbsp;(* 2 </code><em>step</em><code>)),
+&hellip;, (+&nbsp;</code><em>start</em><code>
+(*&nbsp;</code><em>n step</em><code>))</code>,
+</blockquote>
+<p>where <em>n</em> is the greatest integer such that
+<code>(+&nbsp;</code><em>start</em><code> (*&nbsp;</code><em>n step</em><code>))</code>
+&lt; <em>end</em> if <em>step</em> is positive, or such that
+<code>(+&nbsp;</code><em>start</em><code> (*&nbsp;</code><em>n step</em><code>))</code>
+&gt; <em>end</em> if <em>step</em> is negative. It is is an error if an
+<em>n</em> satisfying this condition cannot be determined, or if
+<em>step</em> is numerically zero.  This procedure must run in O(1)
+time.  The average accessing time of the resulting range must be O(1).</p>
+
+<p>Note that an effect of this definition is that the elements of a
+range over inexact numbers are enumerated by multiplying the index by
+the step value rather than by adding the step value to itself
+repeatedly.  This reduces the likelihood of roundoff errors.</p>
+
 <p><code>(vector-range</code>&nbsp;<em>vector</em><code>)</code></p>
 <p>Returns a range whose elements are those of <em>vector</em>.  The
 procedure must run in O(1) time.
