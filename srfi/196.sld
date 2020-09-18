@@ -23,7 +23,7 @@
         (define (assume b) #t))))
 
   (export range numeric-range vector-range string-range range-append
-          range? range=? range-length range-ref range-first
+          iota-range range? range=? range-length range-ref range-first
           range-last subrange range-segment range-split-at range-take
           range-take-right range-drop range-drop-right range-count
           range-map->list range-for-each range-fold range-fold-right

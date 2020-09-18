@@ -89,6 +89,23 @@
                "numeric-range: invalid parameters")
        (raw-range 0 len (lambda (n) (+ start (* n step))) 0)))))
 
+;; TODO: Consider possible round-off bugs.
+(define iota-range
+  (case-lambda
+    ((len) (iota-range len 0 1))
+    ((len start) (iota-range len start 1))
+    ((len start step)
+     (assume (exact-natural? len))
+     (assume (real? start))
+     (assume (and (real? step) (not (zero? step))))
+     (raw-range 0
+                len
+                (cond ((and (zero? start) (= step 1)) (lambda (i) i))
+                      ((= step 1) (lambda (i) (+ start i)))
+                      ((zero? start) (lambda (i) (* step i)))
+                      (else (lambda (i) (+ start (* step i)))))
+                0))))
+
 (define (vector-range vec)
   (assume (vector? vec))
   (raw-range 0 (vector-length vec) (lambda (i) (vector-ref vec i)) 0))
