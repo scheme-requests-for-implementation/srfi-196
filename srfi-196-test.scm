@@ -138,7 +138,7 @@
   (check (%range-empty? (numeric-range 1 1))      => #t)
   (check (range->list (numeric-range -5 -1))      => (iota 4 -5))
   (check (range->list (numeric-range 1 -5 -1))    => (iota 6 1 -1))
-  (check (range->list (numeric-range 1.3 5.3))    => (iota 4 1.3))
+  (check (range->list (numeric-range 4/3 16/3))   => (iota 4 4/3))
   (check (range->list (numeric-range 0 9 4))      => (iota 3 0 4))
   (check (%range-empty? (numeric-range 0 10 -1))  => #t)
   (check (%range-empty? (numeric-range 0 -10))    => #t)
@@ -146,7 +146,7 @@
   (check (range->list (numeric-range -2 2))       => (iota 4 -2))
   (check (range->list (numeric-range 2 -2 -1))    => (iota 4 2 -1))
   (check (range->list (numeric-range -4 -8 -1))   => (iota 4 -4 -1))
-  (check (range->list (numeric-range -1 -3 -0.6)) => (iota 4 -1 -0.6))
+  (check (range->list (numeric-range -1 -4 -2/3)) => (iota 5 -1 -2/3))
 
   (check (range=/eqv? (iota-range 10 0 0)
                       (range 10 (lambda (_) 0)))
