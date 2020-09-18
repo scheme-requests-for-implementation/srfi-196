@@ -75,6 +75,8 @@
   (case-lambda
     ((start end) (numeric-range start end 1))
     ((start end step)
+     (assume (real? start))
+     (assume (real? end))
      (assume (not (zero? step)) "numeric-range: zero-valued step")
      (let ((len (exact (ceiling (max 0 (/ (- end start) step))))))
        ;; Try to ensure that we can compute a correct range from the
