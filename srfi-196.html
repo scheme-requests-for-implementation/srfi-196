@@ -178,7 +178,7 @@ run <code><var>indexer</var></code>.</p>
 <p>Returns a numeric range, a special case of a range specified by an
 inclusive lower bound <em>start</em>, an exclusive upper bound <em>end</em>, and a
 <em>step</em> value (default 1), all of which can be exact or inexact real
-numbers.  This range produces the sequence</p>
+numbers.  This constructor produces the sequence</p>
 <blockquote>
 <em>start</em><code>, (+&nbsp;</code><em>start&nbsp;step</em><code>),
 (+&nbsp;</code><em>start</em><code>&nbsp;(* 2 </code><em>step</em><code>)),
@@ -203,25 +203,19 @@ repeatedly.  This reduces the likelihood of roundoff errors.</p>
 (range-&gt;list (numeric-range 5 -5 -3)) &rArr; (5 2 -1 -4)
 </code></pre>
 
-<p><code>(iota-range</code>&nbsp;<em>length</em> [<em>start [<em>step</em>]]<code>)</code></p>
-<p>Returns a numeric range, a special case of a range specified by a
-length, an
-inclusive lower bound <em>start</em> (default 0),  and a
-<em>step</em> value (default 1), all of which can be exact or inexact real
-numbers.
+<p><code>(iota-range</code>&nbsp;<em>length</em> [<em>start</em> [<em>step</em>]]<code>)</code></p>
+<p>Returns an iota-numeric range, a special case of a range specified by
+a length (a non-negative exact integer) as well as an
+inclusive lower bound <em>start</em> (default 0) and a
+<em>step</em> value (default 1), both of which can be exact or inexact real
+numbers.  This constructor produces the sequence</p>
 <blockquote>
 <em>start</em><code>, (+&nbsp;</code><em>start&nbsp;step</em><code>),
 (+&nbsp;</code><em>start</em><code>&nbsp;(* 2 </code><em>step</em><code>)),
 &hellip;, (+&nbsp;</code><em>start</em><code>
-(*&nbsp;</code><em>n step</em><code>))</code>,
+(*&nbsp;</code><em>length step</em><code>))</code>,
 </blockquote>
-<p>where <em>n</em> is the greatest integer such that
-<code>(+&nbsp;</code><em>start</em><code> (*&nbsp;</code><em>n step</em><code>))</code>
-&lt; <em>end</em> if <em>step</em> is positive, or such that
-<code>(+&nbsp;</code><em>start</em><code> (*&nbsp;</code><em>n step</em><code>))</code>
-&gt; <em>end</em> if <em>step</em> is negative. It is is an error if an
-<em>n</em> satisfying this condition cannot be determined, or if
-<em>step</em> is numerically zero.  This procedure must run in O(1)
+This procedure must run in O(1)
 time.  The average accessing time of the resulting range must be O(1).</p>
 
 <p>Note that an effect of this definition is that the elements of a
