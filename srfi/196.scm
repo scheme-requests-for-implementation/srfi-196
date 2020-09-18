@@ -75,6 +75,8 @@
   (case-lambda
     ((start end) (numeric-range start end 1))
     ((start end step)
+     (assume (real? start))
+     (assume (real? end))
      (assume (not (zero? step)) "numeric-range: zero-valued step")
      (let ((len (exact (ceiling (max 0 (/ (- end start) step))))))
        ;; Try to ensure that we can compute a correct range from the
@@ -88,6 +90,23 @@
                      (else #t))
                "numeric-range: invalid parameters")
        (raw-range 0 len (lambda (n) (+ start (* n step))) 0)))))
+
+;; TODO: Consider possible round-off bugs.
+(define iota-range
+  (case-lambda
+    ((len) (iota-range len 0 1))
+    ((len start) (iota-range len start 1))
+    ((len start step)
+     (assume (exact-natural? len))
+     (assume (real? start))
+     (assume (real? step))
+     (raw-range 0
+                len
+                (cond ((and (zero? start) (= step 1)) (lambda (i) i))
+                      ((= step 1) (lambda (i) (+ start i)))
+                      ((zero? start) (lambda (i) (* step i)))
+                      (else (lambda (i) (+ start (* step i)))))
+                0))))
 
 (define (vector-range vec)
   (assume (vector? vec))
