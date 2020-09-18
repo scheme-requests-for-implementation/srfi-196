@@ -148,6 +148,18 @@
   (check (range->list (numeric-range -4 -8 -1))   => (iota 4 -4 -1))
   (check (range->list (numeric-range -1 -3 -0.6)) => (iota 4 -1 -0.6))
 
+  (check (range=/eqv? (iota-range 10 0 0)
+                      (range 10 (lambda (_) 0)))
+   => #t)
+  (check (%range-empty? (iota-range 0))     => #t)
+  (check (range->list (iota-range 10))      => (iota 10))
+  (check (range->list (iota-range 10 0))    => (iota 10))
+  (check (range->list (iota-range 10 0 1))  => (iota 10))
+  (check (range->list (iota-range 10 10 2)) => (iota 10 10 2))
+  (check (range->list (iota-range 10 0 -1)) => (iota 10 0 -1))
+  (check (range->list (iota-range 10 5 -2)) => (iota 10 5 -2))
+  (check (range->list (iota-range 10 1/2))  => (iota 10 1/2))
+
   (let ((vec (vector 1 3 5 7 9)))
     (check (range-length (vector-range vec))  => (vector-length vec))
     (check (range-first (vector-range vec))   => (vector-ref vec 0))
