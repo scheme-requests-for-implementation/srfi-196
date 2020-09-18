@@ -97,7 +97,7 @@
     ((len start step)
      (assume (exact-natural? len))
      (assume (real? start))
-     (assume (and (real? step) (not (zero? step))))
+     (assume (real? step))
      (raw-range 0
                 len
                 (cond ((and (zero? start) (= step 1)) (lambda (i) i))
