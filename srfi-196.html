@@ -28,7 +28,10 @@
   <li>Draft #8 published: 2020-09-02</li>
   <li>Draft #9 published: 2020-09-13</li>
   <li>Finalized: 2020-09-17</li>
-</ul>
+  <li>Revised to fix errata:
+  <ul>
+    <li>2020-09-27 (The final term in the description of the sequence produced by <code>iota-range</code> was
+      wrong.)</li></ul></li></ul>
 
 <h2>Abstract</h2>
 
@@ -206,7 +209,7 @@ numbers.  This constructor produces the sequence</p>
 <em>start</em><code>, (+&nbsp;</code><em>start&nbsp;step</em><code>),
 (+&nbsp;</code><em>start</em><code>&nbsp;(* 2 </code><em>step</em><code>)),
 &hellip;, (+&nbsp;</code><em>start</em><code>
-(*&nbsp;</code><em>length step</em><code>))</code>,
+(*&nbsp;</code>(- <em>length</em> 1) <em>step</em><code>))</code>,
 </blockquote>
 <p>This procedure must run in O(1)
 time.  The average accessing time of the resulting range must be O(1).</p>
