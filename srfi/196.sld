@@ -6,6 +6,8 @@
   (cond-expand
     ((library (srfi 133))
      (import (only (srfi 133) vector-unfold)))
+    ((library (srfi 43))
+     (import (only (srfi 43) vector-unfold)))
     (else
      (begin
       ;; The "seedless" case is all we need.
