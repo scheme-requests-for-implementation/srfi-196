@@ -11,9 +11,10 @@
       ;; The "seedless" case is all we need.
       (define (vector-unfold f len)
         (let ((res (make-vector len)))
-          (cond ((= i len) res)
-                (else (vector-set! res i (f i))
-                      (lp (+ i 1)))))))))
+          (let lp ((i 0))
+            (cond ((= i len) res)
+                  (else (vector-set! res i (f i))
+                        (lp (+ i 1))))))))))
 
   (cond-expand
     ((library (srfi 145))
