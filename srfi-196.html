@@ -15,10 +15,9 @@
 
 <h2>Status</h2>
 
-<p>This SRFI is currently in <em>draft</em> status.  Here is <a href="https://srfi.schemers.org/srfi-process.html">an explanation</a> of each status that a SRFI can hold.  To provide input on this SRFI, please send email to <code><a href="mailto:srfi+minus+196+at+srfi+dotschemers+dot+org">srfi-196@<span class="antispam">nospam</span>srfi.schemers.org</a></code>.  To subscribe to the list, follow <a href="https://srfi.schemers.org/srfi-list-subscribe.html">these instructions</a>.  You can access previous messages via the mailing list <a href="https://srfi-email.schemers.org/srfi-196">archive</a>.</p>
+<p>This SRFI is currently in <em>final</em> status.  Here is <a href="https://srfi.schemers.org/srfi-process.html">an explanation</a> of each status that a SRFI can hold.  To provide input on this SRFI, please send email to <code><a href="mailto:srfi+minus+196+at+srfi+dotschemers+dot+org">srfi-196@<span class="antispam">nospam</span>srfi.schemers.org</a></code>.  To subscribe to the list, follow <a href="https://srfi.schemers.org/srfi-list-subscribe.html">these instructions</a>.  You can access previous messages via the mailing list <a href="https://srfi-email.schemers.org/srfi-196">archive</a>.</p>
 <ul>
   <li>Received: 2020-05-17</li>
-  <li>60-day deadline: 2020-07-16</li>
   <li>Draft #1 published: 2020-05-17</li>
   <li>Draft #2 published: 2020-07-16</li>
   <li>Draft #3 published: 2020-07-19</li>
@@ -28,10 +27,11 @@
   <li>Draft #7 published: 2020-09-01</li>
   <li>Draft #8 published: 2020-09-02</li>
   <li>Draft #9 published: 2020-09-13</li>
-  <li>John Cowan's <a href="https://github.com/johnwcowan/srfi-196">personal
-    Git repo for this SRFI</a> for reference while the SRFI is in
-    <em>draft</em> status (<a href="https://htmlpreview.github.io/?https://github.com/johnwcowan/srfi-196/blob/master/srfi-196.html">preview</a>)</li>
-</ul>
+  <li>Finalized: 2020-09-17</li>
+  <li>Revised to fix errata:
+  <ul>
+    <li>2020-09-27 (The final term in the description of the sequence produced by <code>iota-range</code> was
+      wrong.)</li></ul></li></ul>
 
 <h2>Abstract</h2>
 
@@ -46,10 +46,6 @@
   necessary, a range can be converted to a list, vector, or string of
   its elements or a generator that will lazily produce each element in
   the range.</p>
-
-<h2>Issues</h2>
-
-None at present.
 
 <h2>Rationale</h2>
 
@@ -213,9 +209,9 @@ numbers.  This constructor produces the sequence</p>
 <em>start</em><code>, (+&nbsp;</code><em>start&nbsp;step</em><code>),
 (+&nbsp;</code><em>start</em><code>&nbsp;(* 2 </code><em>step</em><code>)),
 &hellip;, (+&nbsp;</code><em>start</em><code>
-(*&nbsp;</code><em>length step</em><code>))</code>,
+(*&nbsp;</code>(- <em>length</em> 1) <em>step</em><code>))</code>,
 </blockquote>
-This procedure must run in O(1)
+<p>This procedure must run in O(1)
 time.  The average accessing time of the resulting range must be O(1).</p>
 
 <p>Note that an effect of this definition is that the elements of a
