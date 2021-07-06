@@ -416,7 +416,7 @@ the <code><var>ranges</var></code>.</p>
 (range-any &lt; (numeric-range 0 10 2) (numeric-range 5 15)) &rArr; #t
 </code></pre>
 
-<p><code>(range-every</code>&nbsp;<em>pred range</em><code>)</code></p>
+<p><code>(range-every</code>&nbsp;<em>pred range1 range2</em> ...<code>)</code></p>
 <p>Applies <em>pred</em> element-wise to the elements of the
 <em>ranges</em> and returns true if <em>pred</em> returns true on
 every application. Specifically it returns the last value returned by
