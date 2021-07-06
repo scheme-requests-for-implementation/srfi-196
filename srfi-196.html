@@ -261,6 +261,17 @@ maximum of the average accessing times of the <var>ranges</var>.
   &rArr; (0 1 2 3 4 5)
 </code></pre>
 
+<p><code>(range-reverse</code>&nbsp;<em>range</em><code>)</code></p>
+<p>Returns a range whose elements are the elements of the <em>range</em>
+but in reverse order.  This procedure must run in O(<em>s</em>) time,
+where <em>s</em> is the total accessing time of <em>range</em>.
+The resulting range may be expanded, and should have O(1) average
+accessing time.
+</p>
+<pre class="example"><code>(range-&gt;list (range-reverse (numeric-range 1 4)))
+  &rArr; (3 2 1)
+</code></pre>
+
 <h3 id="predicates">Predicates</h3>
 
 <p><code>(range?</code>&nbsp;<em>obj</em><code>)</code></p>
