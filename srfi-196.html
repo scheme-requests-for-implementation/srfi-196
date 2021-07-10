@@ -31,7 +31,12 @@
   <li>Revised to fix errata:
   <ul>
     <li>2020-09-27 (The final term in the description of the sequence produced by <code>iota-range</code> was
-      wrong.)</li></ul></li></ul>
+      wrong.)</li>
+    <li>2020-07-10 (The procedure <a href="#range-reverse"><code>range-reverse</code></a>
+      had been omitted from the document accidentally, so it was
+      added.  It was already in the sample implementation, with tests.
+      Also, fixed a simple editorial error in the <code>range-every</code>
+      entry.)</li></ul></li></ul>
 
 <h2>Abstract</h2>
 
@@ -261,7 +266,7 @@ maximum of the average accessing times of the <var>ranges</var>.
   &rArr; (0 1 2 3 4 5)
 </code></pre>
 
-<p><code>(range-reverse</code>&nbsp;<em>range</em><code>)</code></p>
+<p id="range-reverse"><code>(range-reverse</code>&nbsp;<em>range</em><code>)</code></p>
 <p>Returns a range whose elements are the elements of the <em>range</em>
 but in reverse order.  This procedure must run in O(<em>s</em>) time,
 where <em>s</em> is the total accessing time of <em>range</em>.
