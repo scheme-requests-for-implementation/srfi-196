@@ -418,7 +418,7 @@ of the <code><var>ranges</var></code>.</p>
 <p><code>(range-any</code>&nbsp;<em>pred range1 range2</em> ...<code>)</code></p>
 <p>Applies <em>pred</em> element-wise to the elements of the
 <em>ranges</em> and returns true if <em>pred</em> returns true on any
-application. Specifically it returns the first value returned by
+application. Specifically it returns the last value returned by
 <em>pred</em>. Otherwise, <code>#f</code> is returned. If more than
 one <em>range</em> is given and not all ranges have the same length,
 <em>range-any</em> terminates when the shortest range is exhausted.
