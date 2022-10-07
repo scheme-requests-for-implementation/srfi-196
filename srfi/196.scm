@@ -270,13 +270,21 @@
 (define (range-any pred r . rs)
   (assume (procedure? pred))
   (assume (range? r))
-  (if (null? rs)                        ; one-range fast path
-      (%range-fold-1 (lambda (last x) (or (pred x) last)) #f r)
-      (apply range-fold                 ; variadic path
-             (lambda (last . xs) (or (apply pred xs) last))
-             #f
-             r
-             rs)))
+  (call-with-current-continuation
+   (lambda (return)
+     (if (null? rs)                        ; one-range fast path
+         (%range-fold-1 (lambda (_last x)
+                          (cond ((pred x) => return)
+                                (else #f)))
+                        #f
+                        r)
+         (apply range-fold                 ; variadic path
+                (lambda (_last . xs)
+                  (cond ((apply pred xs) => return)
+                        (else #f)))
+                #f
+                r
+                rs)))))
 
 (define (range-every pred r . rs)
   (assume (procedure? pred))
