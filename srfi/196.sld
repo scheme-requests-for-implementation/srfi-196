@@ -23,7 +23,7 @@
      (import (srfi 145)))
     (else
       (begin
-        (define (assume b) #t))))
+        (define (assume . rest) #t))))
 
   (export range numeric-range vector-range string-range range-append
           iota-range range? range=? range-length range-ref range-first
