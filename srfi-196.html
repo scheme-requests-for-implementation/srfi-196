@@ -36,7 +36,8 @@
       had been omitted from the document accidentally, so it was
       added.  It was already in the sample implementation, with tests.
       Also, fixed a simple editorial error in the <code>range-every</code>
-      entry.)</li></ul></li></ul>
+      entry.)</li>
+    <li>2022-10-07 (Revised to clarify the behavior of <a href="#range-any"><code>range-any</code></a>.)</li></ul></li></ul>
 
 <h2>Abstract</h2>
 
@@ -415,11 +416,10 @@ of the <code><var>ranges</var></code>.</p>
 (range-count &lt; (numeric-range 0 10 2) (numeric-range 5 15)) &rArr; 5
 </code></pre>
 
-<p><code>(range-any</code>&nbsp;<em>pred range1 range2</em> ...<code>)</code></p>
-<p>Applies <em>pred</em> element-wise to the elements of the
-<em>ranges</em> and returns true if <em>pred</em> returns true on any
-application. Specifically it returns the last value returned by
-<em>pred</em>. Otherwise, <code>#f</code> is returned. If more than
+<p id="range-any"><code>(range-any</code>&nbsp;<em>pred range1 range2</em> ...<code>)</code></p>
+<p>Invokes <em>pred</em> element-wise to the elements of the
+<em>ranges</em> until one call returns a true value, and then
+returns that value.  Otherwise, <code>#f</code> is returned. If more than
 one <em>range</em> is given and not all ranges have the same length,
 <em>range-any</em> terminates when the shortest range is exhausted.
 The runtime of this procedure is O(<em>s</em>) where <em>s</em> is the
